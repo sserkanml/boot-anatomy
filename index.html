@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <meta
+      name="description"
+      content="What actually happens inside a desktop PC between pressing the power button and reaching the login screen, walked through step by step as signal flow on a 3D motherboard."
+    />
+    <title>Boot Anatomy — From power button to login screen</title>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="scene-canvas"></canvas>
+      <!-- CSS2DRenderer renders the on-PCB labels into this layer -->
+      <div id="labels-layer"></div>
+      <!-- The entire DOM interface (panels, buttons, console) is mounted here -->
+      <div id="ui-layer"></div>
+    </div>
+    <noscript>
+      <p style="color: #e6edf3; font-family: sans-serif; padding: 2rem">
+        You need to use JavaScript and WebGL to view this content.
+      </p>
+    </noscript>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
