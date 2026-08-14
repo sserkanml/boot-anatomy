@@ -2,6 +2,7 @@ import type { BootSequence } from '../state/BootSequence';
 import { ConsolePanel } from './ConsolePanel';
 import { Controls } from './Controls';
 import { InfoPanel } from './InfoPanel';
+import { PsuModal } from './PsuModal';
 import { Timeline } from './Timeline';
 
 /**
@@ -16,7 +17,10 @@ export class UILayer {
   private readonly timeline: Timeline;
   private readonly consolePanel: ConsolePanel;
   private readonly controls: Controls;
+  private readonly psuModal: PsuModal;
   private readonly disposers: Array<() => void> = [];
+  /** Whether the boot chain should resume once the PSU dialog closes. */
+  private resumeAfterModal = false;
 
   constructor(
     private readonly root: HTMLElement,
@@ -33,6 +37,20 @@ export class UILayer {
       onReset: () => sequence.reset(),
     });
 
+    // Opening the dialog pauses the chain, so the scene is not animating away
+    // behind it; closing resumes only if it had been running in the first place.
+    this.psuModal = new PsuModal({
+      onOpen: () => {
+        this.resumeAfterModal = sequence.state === 'running' && !sequence.isPaused;
+        sequence.setPaused(true);
+        this.controls.setPaused(true);
+      },
+      onClose: () => {
+        if (this.resumeAfterModal) sequence.setPaused(false);
+        this.controls.setPaused(sequence.isPaused);
+      },
+    });
+
     this.root.append(
       this.createBrand(),
       this.timeline.element,
@@ -40,10 +58,20 @@ export class UILayer {
       this.consolePanel.element,
       this.controls.element,
       this.createHint(),
+      this.psuModal.element,
     );
 
     this.bindSequence();
     this.bindKeyboard();
+  }
+
+  /** Opens the PSU walkthrough; wired to clicking the PSU in the scene. */
+  openPsuModal(): void {
+    this.psuModal.openAt(0);
+  }
+
+  get isModalOpen(): boolean {
+    return this.psuModal.isOpen;
   }
 
   dispose(): void {
@@ -85,6 +113,8 @@ export class UILayer {
     const onKeyDown = (event: KeyboardEvent): void => {
       // Disable the shortcuts while a form element has focus.
       if (event.target instanceof HTMLInputElement) return;
+      // The PSU dialog owns the keyboard while it is open.
+      if (this.psuModal.isOpen) return;
 
       switch (event.key) {
         case ' ':

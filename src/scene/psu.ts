@@ -1,6 +1,7 @@
 import {
   BoxGeometry,
   CatmullRomCurve3,
+  Color,
   CylinderGeometry,
   Group,
   Mesh,
@@ -12,12 +13,17 @@ import {
 import { DEFAULT_ANCHORS } from '../config/anchors';
 import { COLORS, PSU_BOX } from '../config/constants';
 
+/** Emissive tint applied to the shell while the PSU is hovered. */
+const HIGHLIGHT_COLOR = new Color(0x2f7fd0);
+
 export interface PsuObject {
   group: Group;
   /** Called every frame to spin the fan. */
   update(dt: number): void;
   /** Starts the fan once the main converter switches on. */
   setRunning(running: boolean): void;
+  /** Lights the shell to signal that the PSU can be clicked. */
+  setHighlighted(highlighted: boolean): void;
   dispose(): void;
 }
 
@@ -107,6 +113,8 @@ export function createPsu(): PsuObject {
 
   let running = false;
   let speed = 0;
+  let highlightTarget = 0;
+  let highlight = 0;
 
   return {
     group: root,
@@ -115,9 +123,18 @@ export function createPsu(): PsuObject {
       const target = running ? 9 : 0;
       speed += (target - speed) * Math.min(1, dt * 1.5);
       fan.rotation.y += speed * dt;
+
+      if (highlight !== highlightTarget) {
+        highlight += (highlightTarget - highlight) * Math.min(1, dt * 9);
+        if (Math.abs(highlightTarget - highlight) < 0.01) highlight = highlightTarget;
+        shell.emissive.copy(HIGHLIGHT_COLOR).multiplyScalar(highlight * 0.75);
+      }
     },
     setRunning(value: boolean) {
       running = value;
+    },
+    setHighlighted(value: boolean) {
+      highlightTarget = value ? 1 : 0;
     },
     dispose() {
       root.traverse((object) => {

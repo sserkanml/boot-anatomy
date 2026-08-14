@@ -52,6 +52,10 @@ export const COLORS = {
  * +12V yellow, +5V red, +3.3V orange, PS_ON# green, PWR_OK gray/blue.
  */
 export const RAIL_COLORS = {
+  /** Live mains, primary side of the isolation barrier. */
+  mains: 0xff6b4a,
+  /** Rectified high-voltage DC on the bulk rail. */
+  hvdc: 0xffa94d,
   '+5VSB': 0xa77bff,
   '+12V': 0xffd166,
   '+5V': 0xff5c5c,
@@ -75,3 +79,22 @@ export const CAMERA = {
   minDistance: 14,
   maxDistance: 95,
 } as const;
+
+/**
+ * Camera framing per scene view. Entering the PSU flies the camera in close
+ * enough that the internal components read, while keeping the motherboard in
+ * frame behind so the spatial relationship is never lost.
+ */
+export const VIEW_CAMERAS = {
+  board: {
+    position: CAMERA.position,
+    target: CAMERA.target,
+  },
+  psu: {
+    position: [37, 16, 22] as const,
+    target: [22, 1.2, 2] as const,
+  },
+} as const;
+
+/** Seconds the camera takes to move between views. */
+export const VIEW_FLIGHT_DURATION = 1.4;

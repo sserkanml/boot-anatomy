@@ -1,5 +1,6 @@
 import './ui/styles.css';
 
+import { Picker } from './core/Picker';
 import { SceneManager } from './core/SceneManager';
 import { createLighting } from './core/lighting';
 import { BoardScene } from './scene/BoardScene';
@@ -41,11 +42,22 @@ function bootstrap(): void {
     if (state === 'idle') board.reset();
   });
 
-  new UILayer(uiContainer, sequence);
+  const ui = new UILayer(uiContainer, sequence);
+
+  // Clicking the PSU (or activating its label) opens the walkthrough of what
+  // happens inside it, between the wall socket and the DC rails.
+  const picker = new Picker(manager.camera, manager.renderer.domElement);
+  picker.register(board.psuObject, {
+    onSelect: () => ui.openPsuModal(),
+    onHoverChange: (hovered) => board.setPsuHighlighted(hovered),
+  });
+  board.onPsuActivate = () => ui.openPsuModal();
 
   manager.onRender((dt, elapsed) => {
     sequence.update(dt);
     board.update(dt, elapsed);
+    picker.setEnabled(!ui.isModalOpen);
+    picker.update();
   });
 
   // Show the passive standby step and start the render loop.

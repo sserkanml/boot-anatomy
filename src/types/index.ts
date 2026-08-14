@@ -18,10 +18,26 @@ export type AnchorId =
   | 'ram' // DIMM slots
   | 'm2' // M.2 NVMe SSD
   | 'pcie' // PCIe x16 (graphics card)
-  | 'display'; // Monitor (off-board)
+  | 'display' // Monitor (off-board)
+  // --- Inside the PSU, revealed in the 'psu' view ---
+  | 'wallSocket' // Mains outlet on the wall
+  | 'psuInlet' // IEC socket at the rear of the unit
+  | 'psuEmi' // EMI filter board
+  | 'psuRectifier' // Bridge rectifier + bulk capacitors
+  | 'psuPfc' // Active PFC choke and switches
+  | 'psuSwitching' // Primary switching MOSFETs
+  | 'psuTransformer' // Main transformer, straddling the isolation barrier
+  | 'psuSecondary' // Secondary side rectification
+  | 'psuFilter' // Output inductors and capacitors
+  | 'psuStandby' // Standby flyback transformer
+  | 'psuSupervisor' // Supervisory IC
+  | 'psuOutput'; // Output connector block
 
 /** Top-level phases of the boot chain — used for colors/badges in the UI. */
-export type Phase = 'standby' | 'power' | 'firmware' | 'os';
+export type Phase = 'psu' | 'standby' | 'power' | 'firmware' | 'os';
+
+/** Which part of the scene a step is staged in. */
+export type SceneView = 'board' | 'psu';
 
 /** Definition of a single visual signal path. */
 export interface SignalSpec {
@@ -68,6 +84,19 @@ export interface BootStep {
   console?: string[];
   /** Which screen the monitor shows during this step. */
   screen?: 'off' | 'post' | 'boot' | 'login';
+  /**
+   * Where the camera is staged for this step. Steps inside the PSU set 'psu',
+   * which flies the camera in and makes the PSU shell transparent.
+   */
+  view?: SceneView;
+  /**
+   * Nested steps, played in order right after their parent. Used to break the
+   * PSU open into its internal stages without flattening them into the
+   * top-level chain.
+   */
+  substeps?: BootStep[];
+  /** Shows a button that opens the block-diagram dialog for this step. */
+  schematic?: boolean;
 }
 
 export type BootState = 'idle' | 'running' | 'complete';

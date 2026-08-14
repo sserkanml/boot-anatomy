@@ -20,6 +20,12 @@ export class BoardScene {
   readonly anchors = new AnchorRegistry();
   readonly signals: SignalOrchestrator;
 
+  /**
+   * Invoked when the PSU is activated, either by clicking it in the scene or by
+   * pressing its label. Assigned by main.ts once the UI exists.
+   */
+  onPsuActivate: (() => void) | null = null;
+
   private readonly root = new Group();
   private readonly labels: AnchorLabels;
   private readonly psu: PsuObject;
@@ -42,7 +48,18 @@ export class BoardScene {
     this.root.add(this.monitor.group);
 
     this.signals = new SignalOrchestrator(this.root, this.anchors);
-    this.labels = new AnchorLabels(this.anchors, this.root);
+    this.labels = new AnchorLabels(this.anchors, this.root, {
+      actions: { psu: () => this.onPsuActivate?.() },
+    });
+  }
+
+  /** The PSU assembly, registered with the Picker so it can be clicked. */
+  get psuObject(): Object3D {
+    return this.psu.group;
+  }
+
+  setPsuHighlighted(highlighted: boolean): void {
+    this.psu.setHighlighted(highlighted);
   }
 
   /**

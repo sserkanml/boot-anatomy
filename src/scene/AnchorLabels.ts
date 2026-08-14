@@ -7,6 +7,14 @@ import type { AnchorRegistry } from './AnchorRegistry';
 /** Anchors that get no label (to keep the scene from getting too busy). */
 const HIDDEN: ReadonlySet<AnchorId> = new Set<AnchorId>(['display']);
 
+export interface AnchorLabelOptions {
+  /**
+   * Anchors whose label becomes a real button. This is what makes a part
+   * reachable by keyboard, not just by clicking it in the 3D scene.
+   */
+  actions?: Partial<Record<AnchorId, () => void>>;
+}
+
 /**
  * Hangs a CSS2D label above every anchor. Because the labels are real DOM
  * elements, they share the typography of the rest of the UI and stay crisp.
@@ -18,6 +26,7 @@ export class AnchorLabels {
   constructor(
     private readonly anchors: AnchorRegistry,
     parent: Object3D,
+    options: AnchorLabelOptions = {},
   ) {
     this.root.name = 'anchor-labels';
     parent.add(this.root);
@@ -25,9 +34,18 @@ export class AnchorLabels {
     for (const [id, position] of anchors.entries()) {
       if (HIDDEN.has(id)) continue;
 
-      const element = document.createElement('div');
-      element.className = 'anchor-label';
+      const action = options.actions?.[id];
+      const element = action
+        ? document.createElement('button')
+        : document.createElement('div');
+      element.className = action ? 'anchor-label is-interactive' : 'anchor-label';
       element.textContent = ANCHOR_LABELS[id];
+
+      if (action && element instanceof HTMLButtonElement) {
+        element.type = 'button';
+        element.title = `${ANCHOR_LABELS[id]} — open details`;
+        element.addEventListener('click', action);
+      }
 
       const object = new CSS2DObject(element);
       object.position.copy(position);
