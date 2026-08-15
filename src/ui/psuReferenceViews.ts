@@ -5,6 +5,8 @@ import {
   type Connector,
   type RailKey,
 } from '../config/psuReference';
+import { t } from '../i18n';
+import { UI } from '../i18n/strings';
 
 /** Escapes text that goes into innerHTML, since some answers contain angle brackets. */
 function escapeHtml(value: string): string {
@@ -38,8 +40,8 @@ function renderConnector(connector: Connector): string {
         const style = RAIL_STYLES[pin.rail];
         const noted = pin.note ? ' is-noted' : '';
         const title = pin.note
-          ? ` title="${escapeHtml(pin.note)}"`
-          : ` title="${escapeHtml(`${style.label} — ${style.wire} wire`)}"`;
+          ? ` title="${escapeHtml(t(pin.note))}"`
+          : ` title="${escapeHtml(`${style.label} — ${t(style.wire)}`)}"`;
         return `
           <li class="pin${noted}"${title} style="--pin-color: ${style.swatch}">
             <span class="pin-number">${pin.number}</span>
@@ -55,7 +57,7 @@ function renderConnector(connector: Connector): string {
     .filter((pin) => pin.note)
     .map(
       (pin) =>
-        `<li><b>Pin ${pin.number} · ${escapeHtml(RAIL_STYLES[pin.rail].label)}</b> — ${escapeHtml(pin.note ?? '')}</li>`,
+        `<li><b>Pin ${pin.number} · ${escapeHtml(RAIL_STYLES[pin.rail].label)}</b> — ${escapeHtml(pin.note ? t(pin.note) : '')}</li>`,
     )
     .join('');
 
@@ -63,7 +65,7 @@ function renderConnector(connector: Connector): string {
     <section class="connector">
       <header class="connector-head">
         <h4>${escapeHtml(connector.name)}</h4>
-        <span>${escapeHtml(connector.subtitle)}</span>
+        <span>${escapeHtml(t(connector.subtitle))}</span>
       </header>
       <div class="connector-body">${rows.join('')}</div>
       ${notes ? `<ul class="connector-notes">${notes}</ul>` : ''}
@@ -78,16 +80,12 @@ export function createPinoutView(): string {
       <li class="legend-item">
         <span class="legend-swatch" style="background: ${style.swatch}"></span>
         <span class="legend-label">${escapeHtml(style.label)}</span>
-        <span class="legend-wire">${escapeHtml(style.wire)}</span>
+        <span class="legend-wire">${escapeHtml(t(style.wire))}</span>
       </li>`;
   }).join('');
 
   return `
-    <p class="tab-intro">
-      Pin numbering follows the ATX specification, viewed from the wire entry side of the
-      connector. Wire colors are the industry convention — individually sleeved cables
-      often ignore them entirely, so never identify a rail by color alone.
-    </p>
+    <p class="tab-intro">${escapeHtml(t(UI.pinoutIntro))}</p>
     <ul class="pin-legend">${legend}</ul>
     ${CONNECTORS.map(renderConnector).join('')}`;
 }
@@ -99,10 +97,10 @@ export function createFaqView(): string {
       <details class="faq-item">
         <summary>
           <span class="faq-term">${escapeHtml(entry.term)}</span>
-          <span class="faq-question">${escapeHtml(entry.question)}</span>
+          <span class="faq-question">${escapeHtml(t(entry.question))}</span>
         </summary>
         <div class="faq-answer">
-          <p>${escapeHtml(entry.answer)}</p>
+          <p>${escapeHtml(t(entry.answer))}</p>
           <a class="faq-link" href="${entry.href}" target="_blank" rel="noopener noreferrer">
             Wikipedia: ${escapeHtml(entry.term)} ↗
           </a>
@@ -111,9 +109,6 @@ export function createFaqView(): string {
   ).join('');
 
   return `
-    <p class="tab-intro">
-      The terms used in the walkthrough, in the order they come up. Each answer explains
-      why the part exists rather than just what it is called.
-    </p>
+    <p class="tab-intro">${escapeHtml(t(UI.faqIntro))}</p>
     <div class="faq-list">${entries}</div>`;
 }

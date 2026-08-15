@@ -1,3 +1,6 @@
+import { t } from '../i18n';
+import { UI } from '../i18n/strings';
+
 /**
  * The fake console in the bottom-right corner. Prints the step's console[]
  * lines one by one, in sync with the step's progress.
@@ -13,7 +16,7 @@ export class ConsolePanel {
     this.element.className = 'panel console-panel';
     this.element.innerHTML = `
       <div class="panel-head">
-        <span class="console-title">console</span>
+        <span class="console-title">${t(UI.console)}</span>
         <span class="console-dot"></span>
       </div>
       <pre class="console-output"></pre>

@@ -1,4 +1,6 @@
 import { PHASE_LABELS } from '../config/bootSteps';
+import { t } from '../i18n';
+import { UI } from '../i18n/strings';
 import type { BootStep } from '../types';
 
 /**
@@ -47,13 +49,13 @@ export class InfoPanel {
 
   setStep(step: BootStep, index: number): void {
     this.element.dataset.phase = step.phase;
-    this.phaseChip.textContent = PHASE_LABELS[step.phase];
+    this.phaseChip.textContent = t(PHASE_LABELS[step.phase]);
     this.counter.textContent = `${index + 1} / ${this.totalSteps}`;
-    this.title.textContent = step.title;
-    this.description.textContent = step.description;
+    this.title.textContent = t(step.title);
+    this.description.textContent = t(step.description);
 
     if (step.signal) {
-      this.signal.textContent = step.signal;
+      this.signal.textContent = t(step.signal);
       this.signal.hidden = false;
     } else {
       this.signal.hidden = true;
@@ -62,7 +64,7 @@ export class InfoPanel {
     // Steps with nested stages offer a way into them.
     const hasSubsteps = (step.substeps?.length ?? 0) > 0;
     this.action.hidden = !hasSubsteps;
-    if (hasSubsteps) this.action.textContent = 'Look inside the PSU →';
+    if (hasSubsteps) this.action.textContent = t(UI.lookInsidePsu);
 
     // Trigger a short enter animation whenever the step changes.
     this.element.classList.remove('is-entering');

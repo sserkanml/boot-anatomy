@@ -1,13 +1,15 @@
 import { PSU_STAGES } from '../config/psuStages';
+import { t } from '../i18n';
+import { UI } from '../i18n/strings';
 import { createPsuDiagram } from './psuDiagram';
 import { createFaqView, createPinoutView } from './psuReferenceViews';
 
 export type PsuModalTab = 'diagram' | 'pinout' | 'faq';
 
-const TABS: Array<{ id: PsuModalTab; label: string }> = [
-  { id: 'diagram', label: 'Block diagram' },
-  { id: 'pinout', label: 'Pinout' },
-  { id: 'faq', label: 'FAQ' },
+const TABS: Array<{ id: PsuModalTab; labelKey: string }> = [
+  { id: 'diagram', labelKey: 'tabDiagram' },
+  { id: 'pinout', labelKey: 'tabPinout' },
+  { id: 'faq', labelKey: 'tabFaq' },
 ];
 
 export interface PsuModalHandlers {
@@ -53,17 +55,17 @@ export class PsuModal {
       <div class="psu-modal-panel" role="dialog" aria-modal="true" aria-labelledby="psu-modal-title">
         <header class="psu-modal-head">
           <div>
-            <p class="psu-modal-eyebrow">Power Supply Unit</p>
-            <h2 class="psu-modal-title" id="psu-modal-title">From the wall socket to the DC rails</h2>
+            <p class="psu-modal-eyebrow">${t(UI.modalEyebrow)}</p>
+            <h2 class="psu-modal-title" id="psu-modal-title">${t(UI.psuTitle)}</h2>
           </div>
-          <button type="button" class="psu-modal-close" data-action="close" aria-label="Close">&times;</button>
+          <button type="button" class="psu-modal-close" data-action="close" aria-label="${t(UI.close)}">&times;</button>
         </header>
 
         <div class="psu-tabs" role="tablist">
           ${TABS.map(
             (tab, i) => `
               <button type="button" class="psu-tab" role="tab" data-tab="${tab.id}"
-                      aria-selected="${i === 0}">${tab.label}</button>`,
+                      aria-selected="${i === 0}">${t(UI[tab.labelKey]!)}</button>`,
           ).join('')}
         </div>
 
@@ -88,9 +90,9 @@ export class PsuModal {
         <div class="psu-tabpanel" data-panel="faq" hidden>${createFaqView()}</div>
 
         <footer class="psu-modal-foot">
-          <button type="button" class="psu-nav" data-action="prev">&#8249; Previous</button>
-          <span class="psu-modal-hint">Esc to close</span>
-          <button type="button" class="psu-nav" data-action="next">Next &#8250;</button>
+          <button type="button" class="psu-nav" data-action="prev">${t(UI.previous)}</button>
+          <span class="psu-modal-hint">${t(UI.escToClose)}</span>
+          <button type="button" class="psu-nav" data-action="next">${t(UI.next)}</button>
         </footer>
       </div>
     `;
@@ -162,7 +164,7 @@ export class PsuModal {
       button.className = 'psu-stage-item';
       button.innerHTML = `
         <span class="psu-stage-num">${String(index + 1).padStart(2, '0')}</span>
-        <span class="psu-stage-name">${stage.title}</span>
+        <span class="psu-stage-name">${t(stage.title)}</span>
       `;
       button.addEventListener('click', () => this.setStage(index));
       item.appendChild(button);
@@ -213,12 +215,12 @@ export class PsuModal {
     this.activeIndex = clamped;
 
     this.detailIndex.textContent = `${clamped + 1} / ${PSU_STAGES.length}`;
-    this.detailTitle.textContent = stage.title;
-    this.detailBadge.textContent = stage.badge;
-    this.detailBody.textContent = stage.description;
+    this.detailTitle.textContent = t(stage.title);
+    this.detailBadge.textContent = t(stage.badge);
+    this.detailBody.textContent = t(stage.description);
 
     if (stage.bootNote) {
-      this.detailNote.textContent = stage.bootNote;
+      this.detailNote.textContent = t(stage.bootNote);
       this.detailNote.hidden = false;
     } else {
       this.detailNote.hidden = true;

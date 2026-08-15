@@ -1,3 +1,5 @@
+import { t } from '../i18n';
+import { UI } from '../i18n/strings';
 import type { BootStep } from '../types';
 
 export interface TimelineHandlers {
@@ -22,7 +24,7 @@ export class Timeline {
   constructor(steps: readonly BootStep[], handlers: TimelineHandlers) {
     this.element = document.createElement('nav');
     this.element.className = 'panel timeline';
-    this.element.setAttribute('aria-label', 'Boot steps');
+    this.element.setAttribute('aria-label', t(UI.bootSteps));
 
     const list = document.createElement('ol');
     list.className = 'timeline-list';
@@ -59,7 +61,7 @@ export class Timeline {
     button.dataset.phase = step.phase;
     button.innerHTML = `
       <span class="timeline-dot"></span>
-      <span class="timeline-label">${step.title}</span>
+      <span class="timeline-label">${t(step.title)}</span>
     `;
     button.addEventListener('click', () => handlers.onSelect(index));
     this.items.push(button);
@@ -79,7 +81,7 @@ export class Timeline {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'timeline-subitem';
-      button.textContent = substep.title;
+      button.textContent = t(substep.title);
       button.addEventListener('click', () =>
         handlers.onSelectSubstep(parentIndex, substepIndex),
       );

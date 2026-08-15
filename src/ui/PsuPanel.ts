@@ -1,5 +1,7 @@
 import { PSU_SEQUENCE_STEPS } from '../config/bootSteps';
 import type { BootSequence } from '../state/BootSequence';
+import { t } from '../i18n';
+import { UI } from '../i18n/strings';
 import type { BootStep } from '../types';
 
 export interface PsuPanelHandlers {
@@ -38,15 +40,15 @@ export class PsuPanel {
     this.element.hidden = true;
     this.element.innerHTML = `
       <header class="psu-view-head panel">
-        <button type="button" class="psu-back" data-action="exit">&#8249; Back to board</button>
+        <button type="button" class="psu-back" data-action="exit">${t(UI.backToBoard)}</button>
         <div class="psu-view-heading">
-          <p class="psu-view-eyebrow">Inside the PSU</p>
-          <h2 class="psu-view-title">From the wall socket to the DC rails</h2>
+          <p class="psu-view-eyebrow">${t(UI.psuEyebrow)}</p>
+          <h2 class="psu-view-title">${t(UI.psuTitle)}</h2>
         </div>
-        <button type="button" class="psu-schematic" data-action="schematic">Block diagram</button>
+        <button type="button" class="psu-schematic" data-action="schematic">${t(UI.blockDiagram)}</button>
       </header>
 
-      <nav class="panel psu-view-stages" aria-label="PSU stages">
+      <nav class="panel psu-view-stages" aria-label="${t(UI.psuStages)}">
         <ol class="psu-stage-list"></ol>
       </nav>
 
@@ -61,9 +63,9 @@ export class PsuPanel {
       </section>
 
       <div class="transport psu-view-transport">
-        <button type="button" data-action="prev" title="Previous stage (&larr;)">&#8249;</button>
-        <button type="button" data-action="pause" title="Pause (Space)">Pause</button>
-        <button type="button" data-action="next" title="Next stage (&rarr;)">&#8250;</button>
+        <button type="button" data-action="prev" title="${t(UI.previousStep)} (&larr;)">&#8249;</button>
+        <button type="button" data-action="pause" title="${t(UI.pause)} (Space)">${t(UI.pause)}</button>
+        <button type="button" data-action="next" title="${t(UI.nextStep)} (&rarr;)">&#8250;</button>
       </div>
     `;
 
@@ -106,7 +108,7 @@ export class PsuPanel {
   }
 
   setPaused(paused: boolean): void {
-    this.pauseButton.textContent = paused ? 'Resume' : 'Pause';
+    this.pauseButton.textContent = paused ? t(UI.resume) : t(UI.pause);
   }
 
   private buildStageList(): void {
@@ -119,7 +121,7 @@ export class PsuPanel {
       button.className = 'psu-stage-item';
       button.innerHTML = `
         <span class="psu-stage-num">${String(index + 1).padStart(2, '0')}</span>
-        <span class="psu-stage-name">${step.title}</span>
+        <span class="psu-stage-name">${t(step.title)}</span>
       `;
       button.addEventListener('click', () => this.sequence.seek(index));
       item.appendChild(button);
@@ -129,9 +131,9 @@ export class PsuPanel {
   }
 
   private setStage(step: BootStep, index: number): void {
-    this.title.textContent = step.title;
-    this.badge.textContent = step.signal ?? '';
-    this.body.textContent = step.description;
+    this.title.textContent = t(step.title);
+    this.badge.textContent = step.signal ? t(step.signal) : '';
+    this.body.textContent = t(step.description);
     this.counter.textContent = `${index + 1} / ${PSU_SEQUENCE_STEPS.length}`;
     this.setProgress(0);
 

@@ -1,14 +1,15 @@
+import type { Localized } from '../i18n';
 import type { AnchorId, BootStep, Phase, SignalSpec } from '../types';
 import { RAIL_COLORS } from './constants';
 import { PSU_STAGES } from './psuStages';
 
 /** Phase names shown on the info panel badge. */
-export const PHASE_LABELS: Record<Phase, string> = {
-  psu: 'Inside the PSU',
-  standby: 'Standby',
-  power: 'Power Chain',
-  firmware: 'Firmware',
-  os: 'Operating System',
+export const PHASE_LABELS: Record<Phase, Localized> = {
+  psu: { en: 'Inside the PSU', tr: 'PSU’nun İçi' },
+  standby: { en: 'Standby', tr: 'Standby' },
+  power: { en: 'Power Chain', tr: 'Güç Zinciri' },
+  firmware: { en: 'Firmware', tr: 'Firmware' },
+  os: { en: 'Operating System', tr: 'İşletim Sistemi' },
 };
 
 /**
@@ -203,8 +204,12 @@ export const PSU_SEQUENCE_STEPS: BootStep[] = PSU_STAGES.map((stage) => {
     phase: 'psu',
     title: stage.title,
     signal: stage.badge,
+    // The cross-reference to the boot chain reads as part of the explanation.
     description: stage.bootNote
-      ? `${stage.description} ${stage.bootNote}`
+      ? {
+          en: `${stage.description.en} ${stage.bootNote.en}`,
+          tr: `${stage.description.tr} ${stage.bootNote.tr}`,
+        }
       : stage.description,
     duration: 5400,
     view: 'psu',
@@ -226,10 +231,12 @@ export const BOOT_STEPS: BootStep[] = [
   {
     id: 'psu',
     phase: 'standby',
-    title: 'PSU — Plugged In, Standby Up',
+    title: { en: 'PSU — Plugged In, Standby Up', tr: 'PSU — Fişte, Standby Hazır' },
     signal: '+5VSB',
-    description:
-      'As long as the machine is plugged in, a small standby converter inside the PSU keeps producing the +5VSB rail. It enters the board on pin 9 of the 24-pin connector and feeds the Super I/O / EC. The system looks "off" (ACPI S5), but the circuit listening for the power button is very much alive.',
+    description: {
+      en: 'As long as the machine is plugged in, a small standby converter inside the PSU keeps producing the +5VSB rail. It enters the board on pin 9 of the 24-pin connector and feeds the Super I/O / EC. The system looks "off" (ACPI S5), but the circuit listening for the power button is very much alive.',
+      tr: 'Makine fişte olduğu sürece PSU içindeki küçük standby dönüştürücü +5VSB rail’ini üretmeye devam eder. Bu hat karta 24-pin konektörün 9. pininden girer ve Super I/O / EC’yi besler. Sistem “kapalı” görünür (ACPI S5), ama power button’ı dinleyen devre fazlasıyla canlıdır.',
+    },
     duration: 4500,
     screen: 'off',
     schematic: true,
@@ -253,10 +260,12 @@ export const BOOT_STEPS: BootStep[] = [
   {
     id: 'power-button',
     phase: 'power',
-    title: 'The Button Is Pressed',
+    title: { en: 'The Button Is Pressed', tr: 'Düğmeye Basıldı' },
     signal: 'PWRBTN#',
-    description:
-      'The button on the case switches no power at all; it is just a spring-loaded contact that briefly ties the PWRBTN# line on the F_PANEL header to ground. That falling edge reaches the Super I/O / EC, which is still awake on +5VSB, as an interrupt.',
+    description: {
+      en: 'The button on the case switches no power at all; it is just a spring-loaded contact that briefly ties the PWRBTN# line on the F_PANEL header to ground. That falling edge reaches the Super I/O / EC, which is still awake on +5VSB, as an interrupt.',
+      tr: 'Kasadaki düğme hiçbir gücü anahtarlamaz; yalnızca F_PANEL header’ındaki PWRBTN# hattını kısa süreliğine toprağa bağlayan yaylı bir kontaktır. Bu düşen kenar, hâlâ +5VSB ile ayakta olan Super I/O / EC’ye bir interrupt olarak ulaşır.',
+    },
     duration: 4000,
     screen: 'off',
     highlight: ['powerButton', 'fpanel', 'superio'],
@@ -273,10 +282,12 @@ export const BOOT_STEPS: BootStep[] = [
   {
     id: 'ps-on',
     phase: 'power',
-    title: 'The EC Tells the PSU to Wake Up',
+    title: { en: 'The EC Tells the PSU to Wake Up', tr: 'EC, PSU’ya Uyanma Emri Verir' },
     signal: 'PS_ON#',
-    description:
-      'Following the ACPI rules, the EC accepts the press as valid and pulls the green PS_ON# line on pin 16 of the 24-pin connector LOW. It is an active-low signal: grounding the line is what starts the PSU\'s main switching converter.',
+    description: {
+      en: 'Following the ACPI rules, the EC accepts the press as valid and pulls the green PS_ON# line on pin 16 of the 24-pin connector LOW. It is an active-low signal: grounding the line is what starts the PSU\'s main switching converter.',
+      tr: 'EC, ACPI kurallarına uyarak basışı geçerli sayar ve 24-pin konektörün 16. pinindeki yeşil PS_ON# hattını LOW’a çeker. Active-low bir sinyaldir: hattı toprağa çekmek, PSU’nun ana switching converter’ını başlatan şeydir.',
+    },
     duration: 4200,
     screen: 'off',
     highlight: ['superio', 'atx24', 'psu'],
@@ -293,10 +304,12 @@ export const BOOT_STEPS: BootStep[] = [
   {
     id: 'rails',
     phase: 'power',
-    title: 'The Main Rails Come Up',
+    title: { en: 'The Main Rails Come Up', tr: 'Ana Rail’ler Ayağa Kalkar' },
     signal: '+12V / +5V / +3.3V',
-    description:
-      'The PSU\'s main converter kicks in and three rails spread across the board. +12V travels through the EPS connector to the VRM, which switches it down to the ~1V core voltage (Vcore) the CPU needs. +3.3V and +5V feed consumers such as the RAM, the chipset and the M.2 drive.',
+    description: {
+      en: 'The PSU\'s main converter kicks in and three rails spread across the board. +12V travels through the EPS connector to the VRM, which switches it down to the ~1V core voltage (Vcore) the CPU needs. +3.3V and +5V feed consumers such as the RAM, the chipset and the M.2 drive.',
+      tr: 'PSU’nun ana dönüştürücüsü devreye girer ve üç rail karta yayılır. +12V, EPS konektörü üzerinden VRM’e gider; VRM bunu CPU’nun ihtiyaç duyduğu ~1V’luk çekirdek gerilimine (Vcore) düşürür. +3.3V ve +5V ise RAM, chipset ve M.2 sürücü gibi tüketicileri besler.',
+    },
     duration: 5600,
     screen: 'off',
     highlight: ['psu', 'atx24', 'eps12v', 'vrm', 'cpu', 'ram', 'm2', 'chipset'],
@@ -375,10 +388,12 @@ export const BOOT_STEPS: BootStep[] = [
   {
     id: 'pwr-ok',
     phase: 'power',
-    title: 'PWR_OK — The Voltages Are Stable',
+    title: { en: 'PWR_OK — The Voltages Are Stable', tr: 'PWR_OK — Gerilimler Kararlı' },
     signal: 'PWR_OK',
-    description:
-      'Between 100 and 500 ms after the rails settle inside tolerance, the PSU raises PWR_OK (Power Good) on pin 8. Until that signal arrives the chipset refuses to release the reset line: the CPU is held in reset so it cannot start executing instructions on noisy, unsettled voltage.',
+    description: {
+      en: 'Between 100 and 500 ms after the rails settle inside tolerance, the PSU raises PWR_OK (Power Good) on pin 8. Until that signal arrives the chipset refuses to release the reset line: the CPU is held in reset so it cannot start executing instructions on noisy, unsettled voltage.',
+      tr: 'Rail’ler tolerans içine oturduktan 100–500 ms sonra PSU, 8. pindeki PWR_OK (Power Good) hattını yükseltir. Bu sinyal gelene kadar chipset reset hattını bırakmayı reddeder: CPU, gürültülü ve oturmamış gerilimde komut işletmeye başlamasın diye reset’te tutulur.',
+    },
     duration: 4400,
     screen: 'off',
     highlight: ['psu', 'atx24', 'chipset', 'cpu'],
@@ -405,10 +420,12 @@ export const BOOT_STEPS: BootStep[] = [
   {
     id: 'post',
     phase: 'firmware',
-    title: 'POST — Power-On Self-Test',
+    title: { en: 'POST — Power-On Self-Test', tr: 'POST — Power-On Self-Test' },
     signal: 'reset vector 0xFFFFFFF0',
-    description:
-      'The moment reset lifts, the CPU starts executing firmware from the reset vector. UEFI first trains the memory controller, then enumerates the PCIe and NVMe devices and builds the ACPI tables it will hand over to the operating system.',
+    description: {
+      en: 'The moment reset lifts, the CPU starts executing firmware from the reset vector. UEFI first trains the memory controller, then enumerates the PCIe and NVMe devices and builds the ACPI tables it will hand over to the operating system.',
+      tr: 'Reset kalkar kalkmaz CPU, reset vector’den firmware kodunu işletmeye başlar. UEFI önce memory controller’ı eğitir (memory training), ardından PCIe ve NVMe cihazlarını sayar ve işletim sistemine devredeceği ACPI tablolarını hazırlar.',
+    },
     duration: 6000,
     screen: 'post',
     highlight: ['cpu', 'ram', 'chipset', 'm2', 'pcie'],
@@ -456,10 +473,12 @@ export const BOOT_STEPS: BootStep[] = [
   {
     id: 'bootloader',
     phase: 'firmware',
-    title: 'Bootloader — Handover From Disk',
+    title: { en: 'Bootloader — Handover From Disk', tr: 'Bootloader — Diskten Devralma' },
     signal: 'EFI System Partition',
-    description:
-      'The firmware loads and runs the .efi binary (GRUB or systemd-boot) from the EFI System Partition on the NVMe SSD. The bootloader draws its own menu, pulls the selected kernel image and the initramfs into RAM, then hands control to the kernel.',
+    description: {
+      en: 'The firmware loads and runs the .efi binary (GRUB or systemd-boot) from the EFI System Partition on the NVMe SSD. The bootloader draws its own menu, pulls the selected kernel image and the initramfs into RAM, then hands control to the kernel.',
+      tr: 'Firmware, NVMe SSD üzerindeki EFI System Partition’dan .efi dosyasını (GRUB ya da systemd-boot) yükleyip çalıştırır. Bootloader kendi menüsünü çizer, seçilen kernel image’ını ve initramfs’i RAM’e alır, sonra kontrolü kernel’e devreder.',
+    },
     duration: 4800,
     screen: 'boot',
     highlight: ['m2', 'chipset', 'cpu', 'ram'],
@@ -491,10 +510,12 @@ export const BOOT_STEPS: BootStep[] = [
   {
     id: 'kernel',
     phase: 'os',
-    title: 'Kernel Init',
+    title: { en: 'Kernel Init', tr: 'Kernel Init' },
     signal: 'start_kernel()',
-    description:
-      'The kernel takes over the arrangement the firmware set up: it rebuilds the memory map, wakes the sleeping CPU cores (SMP bringup), loads driver modules and mounts the real root filesystem from inside the initramfs.',
+    description: {
+      en: 'The kernel takes over the arrangement the firmware set up: it rebuilds the memory map, wakes the sleeping CPU cores (SMP bringup), loads driver modules and mounts the real root filesystem from inside the initramfs.',
+      tr: 'Kernel, firmware’in kurduğu düzeni devralır: memory map’i yeniden oluşturur, uyuyan CPU çekirdeklerini uyandırır (SMP bringup), driver modüllerini yükler ve gerçek root filesystem’i initramfs içinden mount eder.',
+    },
     duration: 5000,
     screen: 'boot',
     highlight: ['cpu', 'ram', 'm2', 'pcie'],
@@ -534,10 +555,12 @@ export const BOOT_STEPS: BootStep[] = [
   {
     id: 'systemd',
     phase: 'os',
-    title: 'systemd — PID 1',
+    title: { en: 'systemd — PID 1', tr: 'systemd — PID 1' },
     signal: 'graphical.target',
-    description:
-      'With the root filesystem in place, the kernel runs the first user-space process: /sbin/init, which is systemd. It resolves the dependency graph between units, brings services up in parallel wherever it can, and works its way toward graphical.target.',
+    description: {
+      en: 'With the root filesystem in place, the kernel runs the first user-space process: /sbin/init, which is systemd. It resolves the dependency graph between units, brings services up in parallel wherever it can, and works its way toward graphical.target.',
+      tr: 'Root filesystem yerine oturduğunda kernel ilk kullanıcı alanı sürecini çalıştırır: /sbin/init, yani systemd. Unit’ler arasındaki bağımlılık grafiğini çözer, mümkün olan her yerde servisleri paralel ayağa kaldırır ve graphical.target’a doğru ilerler.',
+    },
     duration: 4800,
     screen: 'boot',
     highlight: ['cpu', 'chipset', 'm2', 'pcie'],
@@ -574,10 +597,12 @@ export const BOOT_STEPS: BootStep[] = [
   {
     id: 'login',
     phase: 'os',
-    title: 'Display Manager — The Login Screen',
+    title: { en: 'Display Manager — The Login Screen', tr: 'Display Manager — Login Ekranı' },
     signal: 'GDM / SDDM',
-    description:
-      'graphical.target starts the display manager, which opens a Wayland or X session and draws the greeter. With the first frame sent to the graphics card, the chain that began when someone pressed the power button is complete.',
+    description: {
+      en: 'graphical.target starts the display manager, which opens a Wayland or X session and draws the greeter. With the first frame sent to the graphics card, the chain that began when someone pressed the power button is complete.',
+      tr: 'graphical.target display manager’ı başlatır; o da bir Wayland ya da X oturumu açıp greeter’ı çizer. Ekran kartına gönderilen ilk kare ile birlikte, birinin power button’a basmasıyla başlayan zincir tamamlanmış olur.',
+    },
     duration: 5200,
     screen: 'login',
     highlight: ['cpu', 'pcie', 'display'],

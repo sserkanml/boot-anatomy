@@ -114,8 +114,54 @@ body {
 
 /* ---------- Timeline ---------- */
 
+/* ---------- Language switch ---------- */
+
+.lang-switch {
+  position: absolute;
+  top: 24px;
+  right: 26px;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  background: var(--panel);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  pointer-events: auto;
+  z-index: 2;
+}
+
+.lang-option {
+  min-width: 34px;
+  padding: 5px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-faint);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease;
+}
+
+.lang-option:hover,
+.lang-option:focus-visible {
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.06);
+  outline: none;
+}
+
+.lang-option.is-active {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+}
+
 .timeline {
-  top: 26px;
+  top: 74px;
   right: 26px;
   width: 246px;
   max-height: calc(100vh - 220px);
@@ -700,7 +746,7 @@ body {
 
 .psu-view-stages {
   position: absolute;
-  top: 96px;
+  top: 108px;
   right: 26px;
   width: 250px;
   max-height: calc(100vh - 220px);

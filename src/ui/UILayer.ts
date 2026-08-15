@@ -1,8 +1,11 @@
+import { t } from '../i18n';
+import { UI } from '../i18n/strings';
 import type { BootSequence } from '../state/BootSequence';
 import type { SceneView } from '../types';
 import { ConsolePanel } from './ConsolePanel';
 import { Controls } from './Controls';
 import { InfoPanel } from './InfoPanel';
+import { LanguageSwitch } from './LanguageSwitch';
 import { PsuModal } from './PsuModal';
 import { PsuPanel } from './PsuPanel';
 import { Timeline } from './Timeline';
@@ -64,6 +67,7 @@ export class UILayer {
 
     this.root.append(
       this.createBrand(),
+      new LanguageSwitch().element,
       this.timeline.element,
       this.infoPanel.element,
       this.consolePanel.element,
@@ -197,7 +201,7 @@ export class UILayer {
     brand.className = 'brand';
     brand.innerHTML = `
       <h1>Boot<span>Anatomy</span></h1>
-      <p>From power button to login screen: the order in which a desktop wakes up.</p>
+      <p>${t(UI.brandTagline)}</p>
     `;
     return brand;
   }
@@ -206,9 +210,9 @@ export class UILayer {
     const hint = document.createElement('p');
     hint.className = 'hint';
     hint.innerHTML = `
-      <span>Drag: orbit</span>
-      <span>Scroll: zoom</span>
-      <span>Click the PSU to look inside</span>
+      <span>${t(UI.hintOrbit)}</span>
+      <span>${t(UI.hintZoom)}</span>
+      <span>${t(UI.hintPsu)}</span>
     `;
     return hint;
   }

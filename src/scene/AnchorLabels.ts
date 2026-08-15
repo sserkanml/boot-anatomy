@@ -1,6 +1,8 @@
 import { Object3D } from 'three';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import { ANCHOR_LABELS } from '../config/anchors';
+import { t } from '../i18n';
+import { UI } from '../i18n/strings';
 import type { AnchorId } from '../types';
 import type { AnchorRegistry } from './AnchorRegistry';
 
@@ -43,7 +45,7 @@ export class AnchorLabels {
 
       if (action && element instanceof HTMLButtonElement) {
         element.type = 'button';
-        element.title = `${ANCHOR_LABELS[id]} — open details`;
+        element.title = `${ANCHOR_LABELS[id]} — ${t(UI.openDetails)}`;
         element.addEventListener('click', action);
       }
 

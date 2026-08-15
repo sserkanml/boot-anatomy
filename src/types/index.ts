@@ -73,10 +73,11 @@ export interface BootStep {
   /** Heading shown in the info panel. */
   title: Localized;
   /**
-   * Technical name of the signal, e.g. "PWR_OK". Rendered as a badge, and never
-   * translated — it is the name of the thing, not a description of it.
+   * Name of the signal, rendered as a badge. Pure technical names ("PWR_OK",
+   * "start_kernel()") are plain strings and stay identical in both languages;
+   * the few descriptive ones carry a translation.
    */
-  signal?: string;
+  signal?: string | Localized;
   /** One or two sentences of technical explanation. */
   description: Localized;
   /** Step duration (ms). */

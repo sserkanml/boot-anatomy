@@ -2,6 +2,10 @@ import './ui/styles.css';
 
 import { Vector3 } from 'three';
 
+import { initLanguage, onLanguageChange } from './i18n';
+import { UI } from './i18n/strings';
+import { t } from './i18n';
+
 import { PSU_SEQUENCE_STEPS } from './config/bootSteps';
 import { VIEW_CAMERAS, VIEW_FLIGHT_DURATION } from './config/constants';
 import { Picker } from './core/Picker';
@@ -11,6 +15,7 @@ import { BoardScene } from './scene/BoardScene';
 import { createEnvironment } from './scene/environment';
 import { loadMotherboard } from './scene/loadMotherboard';
 import { BootSequence } from './state/BootSequence';
+import type { SceneView } from './types';
 import { UILayer } from './ui/UILayer';
 
 function requireElement<T extends HTMLElement>(selector: string): T {
@@ -23,7 +28,7 @@ function showFatalError(message: string): void {
   const overlay = document.createElement('div');
   overlay.className = 'panel info-panel';
   overlay.style.cssText = 'left:50%;top:50%;transform:translate(-50%,-50%);padding:24px;';
-  overlay.innerHTML = `<h2 class="info-title">The scene could not start</h2><p class="info-desc">${message}</p>`;
+  overlay.innerHTML = `<h2 class="info-title">${t(UI.sceneFailed)}</h2><p class="info-desc">${message}</p>`;
   requireElement('#ui-layer').appendChild(overlay);
 }
 
@@ -53,16 +58,33 @@ function bootstrap(): void {
     if (state === 'idle') board.reset();
   });
 
-  const ui = new UILayer(uiContainer, sequence, psuSequence, {
-    onViewChange: (view) => {
-      board.setView(view);
-      const framing = VIEW_CAMERAS[view];
-      manager.flyTo(
-        new Vector3(...framing.position),
-        new Vector3(...framing.target),
-        VIEW_FLIGHT_DURATION,
-      );
-    },
+  const applyView = (view: SceneView): void => {
+    board.setView(view);
+    const framing = VIEW_CAMERAS[view];
+    manager.flyTo(
+      new Vector3(...framing.position),
+      new Vector3(...framing.target),
+      VIEW_FLIGHT_DURATION,
+    );
+  };
+
+  const createUI = (): UILayer =>
+    new UILayer(uiContainer, sequence, psuSequence, { onViewChange: applyView });
+
+  let ui = createUI();
+
+  // Every panel renders its text once, at construction. Rather than teach each
+  // component to re-translate itself, the whole DOM layer is rebuilt and the
+  // sequences re-announce where they are — language changes are rare enough.
+  onLanguageChange(() => {
+    const wasInPsu = ui.isPsuViewOpen;
+    const psuStage = psuSequence.currentIndex;
+
+    ui.dispose();
+    ui = createUI();
+
+    sequence.emitCurrent();
+    if (wasInPsu) ui.enterPsuView(psuStage);
   });
 
   // Clicking the PSU (or activating its label) goes inside it, where the stages
@@ -73,6 +95,7 @@ function bootstrap(): void {
     onHoverChange: (hovered) => board.setPsuHighlighted(hovered),
   });
   board.onPsuActivate = () => ui.enterPsuView(0);
+  initLanguage();
 
   manager.onRender((dt, elapsed) => {
     sequence.update(dt);
@@ -105,7 +128,5 @@ try {
   bootstrap();
 } catch (error) {
   console.error(error);
-  showFatalError(
-    'Your browser may not have WebGL enabled. Check that hardware acceleration is on and reload the page.',
-  );
+  showFatalError(t(UI.sceneFailedBody));
 }

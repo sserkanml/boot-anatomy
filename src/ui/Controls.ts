@@ -1,3 +1,5 @@
+import { t } from '../i18n';
+import { UI } from '../i18n/strings';
 import type { BootState } from '../types';
 
 export interface ControlHandlers {
@@ -32,13 +34,13 @@ export class Controls {
     this.element.innerHTML = `
       <button type="button" class="power-button">
         ${POWER_ICON}
-        <span class="power-label">Power</span>
+        <span class="power-label">${t(UI.power)}</span>
       </button>
       <div class="transport" hidden>
-        <button type="button" data-action="prev" title="Previous step (&larr;)">&#8249;</button>
-        <button type="button" data-action="pause" title="Pause (Space)">Pause</button>
-        <button type="button" data-action="next" title="Next step (&rarr;)">&#8250;</button>
-        <button type="button" data-action="reset" title="Start over (R)">Restart</button>
+        <button type="button" data-action="prev" title="${t(UI.previousStep)} (&larr;)">&#8249;</button>
+        <button type="button" data-action="pause" title="${t(UI.pause)} (Space)">${t(UI.pause)}</button>
+        <button type="button" data-action="next" title="${t(UI.nextStep)} (&rarr;)">&#8250;</button>
+        <button type="button" data-action="reset" title="${t(UI.startOver)} (R)">${t(UI.restart)}</button>
       </div>
     `;
 
@@ -69,7 +71,7 @@ export class Controls {
   }
 
   setPaused(paused: boolean): void {
-    this.pauseButton.textContent = paused ? 'Resume' : 'Pause';
+    this.pauseButton.textContent = paused ? t(UI.resume) : t(UI.pause);
   }
 
   private query<T extends HTMLElement>(selector: string): T {

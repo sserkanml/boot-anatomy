@@ -10,6 +10,8 @@ import {
   SRGBColorSpace,
 } from 'three';
 import { MONITOR } from '../config/constants';
+import { t } from '../i18n';
+import { UI } from '../i18n/strings';
 import type { BootStep } from '../types';
 
 type ScreenMode = NonNullable<BootStep['screen']>;
@@ -159,7 +161,7 @@ export function createMonitor(): MonitorObject {
 
     ctx!.fillStyle = 'rgba(180, 200, 225, 0.5)';
     ctx!.font = '400 15px system-ui, sans-serif';
-    ctx!.fillText('Log In', CANVAS_W / 2, y + 228);
+    ctx!.fillText(t(UI.logIn), CANVAS_W / 2, y + 228);
   }
 
   draw();

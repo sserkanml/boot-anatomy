@@ -114,6 +114,15 @@ export class BootSequence extends Emitter<BootEvents> {
     this.goTo(clamped);
   }
 
+  /**
+   * Re-announces the current step without changing anything. Used after the UI
+   * is rebuilt (on a language change) so the fresh panels repopulate.
+   */
+  emitCurrent(): void {
+    this.emit('step:enter', { step: this.currentStep, index: this.index });
+    this.emitProgress();
+  }
+
   setPaused(paused: boolean): void {
     this.paused = paused;
   }
