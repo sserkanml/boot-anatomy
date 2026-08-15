@@ -1,3 +1,5 @@
+import type { Localized } from '../i18n';
+
 /**
  * Named connection points in the scene.
  *
@@ -69,11 +71,14 @@ export interface BootStep {
   id: string;
   phase: Phase;
   /** Heading shown in the info panel. */
-  title: string;
-  /** Technical name of the signal, e.g. "PWR_OK". Rendered as a badge. */
+  title: Localized;
+  /**
+   * Technical name of the signal, e.g. "PWR_OK". Rendered as a badge, and never
+   * translated — it is the name of the thing, not a description of it.
+   */
   signal?: string;
   /** One or two sentences of technical explanation. */
-  description: string;
+  description: Localized;
   /** Step duration (ms). */
   duration: number;
   /** Signal paths played during this step. */

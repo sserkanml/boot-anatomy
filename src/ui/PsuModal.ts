@@ -1,5 +1,14 @@
 import { PSU_STAGES } from '../config/psuStages';
 import { createPsuDiagram } from './psuDiagram';
+import { createFaqView, createPinoutView } from './psuReferenceViews';
+
+export type PsuModalTab = 'diagram' | 'pinout' | 'faq';
+
+const TABS: Array<{ id: PsuModalTab; label: string }> = [
+  { id: 'diagram', label: 'Block diagram' },
+  { id: 'pinout', label: 'Pinout' },
+  { id: 'faq', label: 'FAQ' },
+];
 
 export interface PsuModalHandlers {
   /** Fired after the dialog becomes visible. */
@@ -28,7 +37,9 @@ export class PsuModal {
   private readonly closeButton: HTMLButtonElement;
   private readonly svg: SVGElement;
 
+  private readonly footer: HTMLElement;
   private activeIndex = 0;
+  private activeTab: PsuModalTab = 'diagram';
   private open = false;
   /** Element that had focus before opening, restored on close. */
   private previousFocus: HTMLElement | null = null;
@@ -48,20 +59,33 @@ export class PsuModal {
           <button type="button" class="psu-modal-close" data-action="close" aria-label="Close">&times;</button>
         </header>
 
-        <div class="psu-diagram-wrap">${createPsuDiagram()}</div>
-
-        <div class="psu-modal-body">
-          <ol class="psu-stage-list"></ol>
-          <article class="psu-stage-detail">
-            <div class="panel-head">
-              <span class="psu-stage-badge"></span>
-              <span class="psu-stage-index"></span>
-            </div>
-            <h3 class="psu-stage-title"></h3>
-            <p class="psu-stage-desc"></p>
-            <p class="psu-stage-note"></p>
-          </article>
+        <div class="psu-tabs" role="tablist">
+          ${TABS.map(
+            (tab, i) => `
+              <button type="button" class="psu-tab" role="tab" data-tab="${tab.id}"
+                      aria-selected="${i === 0}">${tab.label}</button>`,
+          ).join('')}
         </div>
+
+        <div class="psu-tabpanel" data-panel="diagram">
+          <div class="psu-diagram-wrap">${createPsuDiagram()}</div>
+
+          <div class="psu-modal-body">
+            <ol class="psu-stage-list"></ol>
+            <article class="psu-stage-detail">
+              <div class="panel-head">
+                <span class="psu-stage-badge"></span>
+                <span class="psu-stage-index"></span>
+              </div>
+              <h3 class="psu-stage-title"></h3>
+              <p class="psu-stage-desc"></p>
+              <p class="psu-stage-note"></p>
+            </article>
+          </div>
+        </div>
+
+        <div class="psu-tabpanel" data-panel="pinout" hidden>${createPinoutView()}</div>
+        <div class="psu-tabpanel" data-panel="faq" hidden>${createFaqView()}</div>
 
         <footer class="psu-modal-foot">
           <button type="button" class="psu-nav" data-action="prev">&#8249; Previous</button>
@@ -78,23 +102,42 @@ export class PsuModal {
     this.detailBody = this.query('.psu-stage-desc');
     this.detailNote = this.query('.psu-stage-note');
     this.closeButton = this.query('.psu-modal-close');
+    this.footer = this.query('.psu-modal-foot');
     this.svg = this.query<HTMLElement>('.psu-diagram') as unknown as SVGElement;
 
     this.buildStageList();
     this.bindEvents();
     this.setStage(0);
+    this.setTab('diagram');
+  }
+
+  /** Switches the visible tab; the stage navigation only applies to the diagram. */
+  setTab(tab: PsuModalTab): void {
+    this.activeTab = tab;
+
+    for (const button of this.element.querySelectorAll<HTMLButtonElement>('.psu-tab')) {
+      const isActive = button.dataset.tab === tab;
+      button.classList.toggle('is-active', isActive);
+      button.setAttribute('aria-selected', String(isActive));
+    }
+    for (const panel of this.element.querySelectorAll<HTMLElement>('.psu-tabpanel')) {
+      panel.hidden = panel.dataset.panel !== tab;
+    }
+
+    this.footer.hidden = tab !== 'diagram';
   }
 
   get isOpen(): boolean {
     return this.open;
   }
 
-  openAt(index = 0): void {
+  openAt(index = 0, tab: PsuModalTab = 'diagram'): void {
     if (this.open) return;
     this.previousFocus = document.activeElement as HTMLElement | null;
     this.open = true;
     this.element.hidden = false;
     this.setStage(index);
+    this.setTab(tab);
     // Focus the dialog itself so Esc and tabbing land inside it.
     this.closeButton.focus();
     this.handlers.onOpen?.();
@@ -131,6 +174,10 @@ export class PsuModal {
   private bindEvents(): void {
     this.element.addEventListener('click', (event) => {
       const target = event.target as HTMLElement;
+
+      const tab = target.closest<HTMLElement>('.psu-tab')?.dataset.tab;
+      if (tab) this.setTab(tab as PsuModalTab);
+
       const action = target.closest('[data-action]')?.getAttribute('data-action');
       if (action === 'close') this.close();
       if (action === 'prev') this.setStage(this.activeIndex - 1);
@@ -143,6 +190,9 @@ export class PsuModal {
         event.stopPropagation();
         this.close();
       }
+      // Stage stepping belongs to the diagram; elsewhere the arrows should
+      // still scroll the panel normally.
+      if (this.activeTab !== 'diagram') return;
       if (event.key === 'ArrowRight') this.setStage(this.activeIndex + 1);
       if (event.key === 'ArrowLeft') this.setStage(this.activeIndex - 1);
     });

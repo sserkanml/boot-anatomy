@@ -885,6 +885,286 @@ body {
   outline: none;
 }
 
+/* ---------- Modal tabs ---------- */
+
+.psu-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  align-self: flex-start;
+}
+
+.psu-tab {
+  padding: 7px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-faint);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease;
+}
+
+.psu-tab:hover,
+.psu-tab:focus-visible {
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.05);
+  outline: none;
+}
+
+.psu-tab.is-active {
+  background: color-mix(in srgb, var(--phase-power) 16%, transparent);
+  color: var(--phase-power);
+}
+
+.psu-tabpanel[hidden] {
+  display: none;
+}
+
+.psu-modal-foot[hidden] {
+  display: none;
+}
+
+.tab-intro {
+  margin: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-dim);
+  max-width: 78ch;
+}
+
+/* ---------- Pinout tab ---------- */
+
+.pin-legend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 0 0 22px;
+  padding: 12px 14px;
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+}
+
+.legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.legend-label {
+  font-family: var(--mono);
+  color: var(--text-dim);
+}
+
+.legend-wire {
+  color: var(--text-faint);
+  font-size: 10.5px;
+}
+
+.connector {
+  margin-bottom: 26px;
+}
+
+.connector-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.connector-head h4 {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 650;
+}
+
+.connector-head span {
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+.connector-body {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  background: rgba(6, 10, 16, 0.5);
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.pin-row {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(58px, 1fr));
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+}
+
+.pin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 7px 4px;
+  border-radius: 6px;
+  /* The wire color is the whole point, so it carries the cell. */
+  background: color-mix(in srgb, var(--pin-color) 24%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pin-color) 50%, transparent);
+  cursor: help;
+}
+
+.pin-number {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-faint);
+}
+
+.pin-rail {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* Pins the boot chain actually depends on. */
+.pin.is-noted {
+  border-color: var(--pin-color);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--pin-color) 45%, transparent);
+}
+
+.connector-notes {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+.connector-notes b {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ---------- FAQ tab ---------- */
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.faq-item {
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  overflow: hidden;
+}
+
+.faq-item summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  list-style: none;
+  transition: background 0.16s ease;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary::after {
+  content: '+';
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 15px;
+  color: var(--text-faint);
+}
+
+.faq-item[open] summary::after {
+  content: '−';
+}
+
+.faq-item summary:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.faq-item[open] summary {
+  background: rgba(61, 220, 132, 0.06);
+}
+
+.faq-term {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--phase-power);
+  padding: 2px 8px;
+  border: 1px solid color-mix(in srgb, var(--phase-power) 32%, transparent);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.faq-question {
+  font-size: 13.5px;
+  color: var(--text);
+}
+
+.faq-answer {
+  padding: 0 14px 14px;
+}
+
+.faq-answer p {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text-dim);
+  max-width: 82ch;
+}
+
+.faq-link {
+  display: inline-block;
+  font-size: 11.5px;
+  font-family: var(--mono);
+  color: var(--phase-os);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--phase-os) 40%, transparent);
+  padding-bottom: 1px;
+}
+
+.faq-link:hover,
+.faq-link:focus-visible {
+  color: #fff;
+  border-bottom-color: currentColor;
+  outline: none;
+}
+
 /* ---------- PSU diagram ---------- */
 
 .psu-diagram-wrap {
