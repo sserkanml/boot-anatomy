@@ -75,6 +75,16 @@ export class AnchorLabels {
     this.root.visible = visible;
   }
 
+  /** Shows only the given anchors' labels; pass null to show every label. */
+  setVisibleSet(ids: readonly AnchorId[] | null): void {
+    const allowed = ids ? new Set(ids) : null;
+    for (const [id, object] of this.objects) {
+      object.visible = allowed === null || allowed.has(id);
+      // CSS2DRenderer leaves hidden elements in the DOM, so clear them too.
+      object.element.style.display = object.visible ? '' : 'none';
+    }
+  }
+
   dispose(): void {
     for (const object of this.objects.values()) {
       object.element.remove();

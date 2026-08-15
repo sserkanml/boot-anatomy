@@ -1,9 +1,16 @@
 import type { BootSequence } from '../state/BootSequence';
+import type { SceneView } from '../types';
 import { ConsolePanel } from './ConsolePanel';
 import { Controls } from './Controls';
 import { InfoPanel } from './InfoPanel';
 import { PsuModal } from './PsuModal';
+import { PsuPanel } from './PsuPanel';
 import { Timeline } from './Timeline';
+
+export interface UIHandlers {
+  /** Fired when the scene should reframe, e.g. on entering the PSU. */
+  onViewChange: (view: SceneView) => void;
+}
 
 /**
  * Builds the entire DOM interface and wires it to BootSequence events.
@@ -11,6 +18,9 @@ import { Timeline } from './Timeline';
  * It knows nothing about the scene layer; the two stay in sync because both
  * listen to the same state machine. If you ever move the UI to React, this is
  * the only folder that changes.
+ *
+ * There are two chains: the board chain, and the PSU chain that plays inside
+ * the unit. Only one is ever running — entering the PSU pauses the board.
  */
 export class UILayer {
   private readonly infoPanel: InfoPanel;
@@ -18,17 +28,26 @@ export class UILayer {
   private readonly consolePanel: ConsolePanel;
   private readonly controls: Controls;
   private readonly psuModal: PsuModal;
+  private readonly psuPanel: PsuPanel;
   private readonly disposers: Array<() => void> = [];
-  /** Whether the boot chain should resume once the PSU dialog closes. */
-  private resumeAfterModal = false;
+  /** Whether the board chain should resume once we leave the PSU. */
+  private resumeAfterPsu = false;
 
   constructor(
     private readonly root: HTMLElement,
     private readonly sequence: BootSequence,
+    private readonly psuSequence: BootSequence,
+    private readonly handlers: UIHandlers,
   ) {
-    this.infoPanel = new InfoPanel(sequence.steps.length);
+    this.infoPanel = new InfoPanel(sequence.steps.length, () => this.enterPsuView(0));
     this.consolePanel = new ConsolePanel();
-    this.timeline = new Timeline(sequence.steps, (index) => sequence.seek(index));
+    this.timeline = new Timeline(sequence.steps, {
+      onSelect: (index) => {
+        this.exitPsuView();
+        sequence.seek(index);
+      },
+      onSelectSubstep: (_parentIndex, substepIndex) => this.enterPsuView(substepIndex),
+    });
     this.controls = new Controls({
       onPower: () => sequence.start(),
       onPrevious: () => sequence.previous(),
@@ -37,18 +56,10 @@ export class UILayer {
       onReset: () => sequence.reset(),
     });
 
-    // Opening the dialog pauses the chain, so the scene is not animating away
-    // behind it; closing resumes only if it had been running in the first place.
-    this.psuModal = new PsuModal({
-      onOpen: () => {
-        this.resumeAfterModal = sequence.state === 'running' && !sequence.isPaused;
-        sequence.setPaused(true);
-        this.controls.setPaused(true);
-      },
-      onClose: () => {
-        if (this.resumeAfterModal) sequence.setPaused(false);
-        this.controls.setPaused(sequence.isPaused);
-      },
+    this.psuModal = new PsuModal();
+    this.psuPanel = new PsuPanel(psuSequence, {
+      onExit: () => this.exitPsuView(),
+      onSchematic: () => this.psuModal.openAt(0),
     });
 
     this.root.append(
@@ -58,6 +69,7 @@ export class UILayer {
       this.consolePanel.element,
       this.controls.element,
       this.createHint(),
+      this.psuPanel.element,
       this.psuModal.element,
     );
 
@@ -65,9 +77,41 @@ export class UILayer {
     this.bindKeyboard();
   }
 
-  /** Opens the PSU walkthrough; wired to clicking the PSU in the scene. */
-  openPsuModal(): void {
-    this.psuModal.openAt(0);
+  /**
+   * Opens the PSU view and starts its chain at the given stage. The board chain
+   * is paused so the two are never animating at once.
+   */
+  enterPsuView(stageIndex = 0): void {
+    if (!this.psuPanel.isOpen) {
+      this.resumeAfterPsu = this.sequence.state === 'running' && !this.sequence.isPaused;
+      this.sequence.setPaused(true);
+      this.controls.setPaused(true);
+      this.root.classList.add('is-psu-view');
+      this.psuPanel.show();
+      this.handlers.onViewChange('psu');
+    }
+
+    this.psuSequence.setPaused(false);
+    this.psuPanel.setPaused(false);
+    // seek() alone would leave stage 0 idle, so start the chain first.
+    this.psuSequence.start();
+    this.psuSequence.seek(stageIndex);
+  }
+
+  exitPsuView(): void {
+    if (!this.psuPanel.isOpen) return;
+
+    this.psuSequence.setPaused(true);
+    this.psuPanel.hide();
+    this.root.classList.remove('is-psu-view');
+    this.handlers.onViewChange('board');
+
+    if (this.resumeAfterPsu) this.sequence.setPaused(false);
+    this.controls.setPaused(this.sequence.isPaused);
+  }
+
+  get isPsuViewOpen(): boolean {
+    return this.psuPanel.isOpen;
   }
 
   get isModalOpen(): boolean {
@@ -113,24 +157,31 @@ export class UILayer {
     const onKeyDown = (event: KeyboardEvent): void => {
       // Disable the shortcuts while a form element has focus.
       if (event.target instanceof HTMLInputElement) return;
-      // The PSU dialog owns the keyboard while it is open.
+      // The block-diagram dialog owns the keyboard while it is open.
       if (this.psuModal.isOpen) return;
 
+      // Inside the PSU the same keys drive the PSU chain instead.
+      const active = this.psuPanel.isOpen ? this.psuSequence : this.sequence;
+
       switch (event.key) {
+        case 'Escape':
+          this.exitPsuView();
+          break;
         case ' ':
           event.preventDefault();
-          if (this.sequence.state === 'idle') this.sequence.start();
-          else this.controls.setPaused(this.sequence.togglePaused());
+          if (this.psuPanel.isOpen) this.psuPanel.setPaused(active.togglePaused());
+          else if (active.state === 'idle') active.start();
+          else this.controls.setPaused(active.togglePaused());
           break;
         case 'ArrowRight':
-          this.sequence.next();
+          active.next();
           break;
         case 'ArrowLeft':
-          this.sequence.previous();
+          active.previous();
           break;
         case 'r':
         case 'R':
-          this.sequence.reset();
+          if (!this.psuPanel.isOpen) active.reset();
           break;
         default:
           break;
@@ -157,7 +208,7 @@ export class UILayer {
     hint.innerHTML = `
       <span>Drag: orbit</span>
       <span>Scroll: zoom</span>
-      <span>Space / &larr; &rarr; / R</span>
+      <span>Click the PSU to look inside</span>
     `;
     return hint;
   }

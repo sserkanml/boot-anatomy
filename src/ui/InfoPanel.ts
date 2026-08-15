@@ -14,8 +14,12 @@ export class InfoPanel {
   private readonly signal: HTMLElement;
   private readonly description: HTMLElement;
   private readonly progressBar: HTMLElement;
+  private readonly action: HTMLButtonElement;
 
-  constructor(private readonly totalSteps: number) {
+  constructor(
+    private readonly totalSteps: number,
+    onAction?: () => void,
+  ) {
     this.element = document.createElement('section');
     this.element.className = 'panel info-panel';
     this.element.innerHTML = `
@@ -26,8 +30,12 @@ export class InfoPanel {
       <h2 class="info-title"></h2>
       <code class="signal-badge"></code>
       <p class="info-desc"></p>
+      <button type="button" class="info-action" hidden></button>
       <div class="progress-track"><div class="progress-bar"></div></div>
     `;
+
+    this.action = this.query('.info-action');
+    if (onAction) this.action.addEventListener('click', onAction);
 
     this.phaseChip = this.query('.phase-chip');
     this.counter = this.query('.step-counter');
@@ -50,6 +58,11 @@ export class InfoPanel {
     } else {
       this.signal.hidden = true;
     }
+
+    // Steps with nested stages offer a way into them.
+    const hasSubsteps = (step.substeps?.length ?? 0) > 0;
+    this.action.hidden = !hasSubsteps;
+    if (hasSubsteps) this.action.textContent = 'Look inside the PSU →';
 
     // Trigger a short enter animation whenever the step changes.
     this.element.classList.remove('is-entering');

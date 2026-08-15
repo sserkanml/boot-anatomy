@@ -90,9 +90,9 @@ export interface BootStep {
    */
   view?: SceneView;
   /**
-   * Nested steps, played in order right after their parent. Used to break the
-   * PSU open into its internal stages without flattening them into the
-   * top-level chain.
+   * Nested steps shown under this one in the timeline. They are not part of the
+   * main chain's playback: selecting one enters that step's `view` and plays it
+   * there, which is how the PSU internals stay a detour rather than a delay.
    */
   substeps?: BootStep[];
   /** Shows a button that opens the block-diagram dialog for this step. */

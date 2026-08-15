@@ -1,6 +1,15 @@
 import { Vector3 } from 'three';
 import type { AnchorId } from '../types';
-import { SIGNAL_HEIGHT } from './constants';
+import { PSU_BOX, SIGNAL_HEIGHT } from './constants';
+
+/**
+ * Anchors inside the PSU are authored in the unit's local frame (origin at the
+ * center of the box, +Z toward the rear where the mains inlet sits) and then
+ * offset into world space, so moving the PSU moves its internals with it.
+ */
+const [PSU_X, PSU_Y, PSU_Z] = PSU_BOX.position;
+const inPsu = (x: number, y: number, z: number): Vector3 =>
+  new Vector3(PSU_X + x, PSU_Y + y, PSU_Z + z);
 
 /**
  * Anchor layout, expressed in the scene's coordinate frame:
@@ -32,7 +41,59 @@ export const DEFAULT_ANCHORS: Record<AnchorId, Vector3> = {
   pcie: new Vector3(-5.5, SIGNAL_HEIGHT, 1.2),
   superio: new Vector3(9.5, SIGNAL_HEIGHT, 7.8),
   fpanel: new Vector3(11, SIGNAL_HEIGHT, 8.6),
+
+  // --- Inside the PSU ---
+  // The wall outlet sits behind the unit, close enough that the PSU view frames
+  // both it and the internals — the mains run is part of the story.
+  wallSocket: new Vector3(PSU_X + 2, 6, PSU_Z + 14),
+  // Primary side runs down the +X half, from the rear inlet to the front.
+  psuInlet: inPsu(3.6, -2.4, 6.4),
+  psuEmi: inPsu(3.6, -2.4, 3.4),
+  psuRectifier: inPsu(3.6, -1.4, 0.6),
+  psuPfc: inPsu(3.6, -1.9, -2.2),
+  psuSwitching: inPsu(3.6, -1.9, -4.9),
+  // The transformers straddle x=0, the only things energy crosses on.
+  psuTransformer: inPsu(0, -1.7, -4.9),
+  psuStandby: inPsu(0, -2.4, 1.6),
+  // Secondary side runs back up the -X half toward the output cables.
+  psuSecondary: inPsu(-3.6, -1.9, -4.9),
+  psuFilter: inPsu(-3.6, -1.9, -1.6),
+  psuSupervisor: inPsu(-3.6, -2.6, 1.4),
+  psuOutput: inPsu(-3.6, -2.2, 4.6),
 };
+
+/** Anchors labelled while the camera is framing the motherboard. */
+export const BOARD_VIEW_ANCHORS: AnchorId[] = [
+  'psu',
+  'atx24',
+  'eps12v',
+  'powerButton',
+  'fpanel',
+  'superio',
+  'chipset',
+  'cpu',
+  'vrm',
+  'ram',
+  'm2',
+  'pcie',
+];
+
+/** Anchors labelled while the camera is inside the PSU. */
+export const PSU_VIEW_ANCHORS: AnchorId[] = [
+  'wallSocket',
+  'psuInlet',
+  'psuEmi',
+  'psuRectifier',
+  'psuPfc',
+  'psuSwitching',
+  'psuTransformer',
+  'psuStandby',
+  'psuSecondary',
+  'psuFilter',
+  'psuSupervisor',
+  'psuOutput',
+  'atx24',
+];
 
 /** Human-readable names shown in the label layer. */
 export const ANCHOR_LABELS: Record<AnchorId, string> = {
@@ -49,6 +110,19 @@ export const ANCHOR_LABELS: Record<AnchorId, string> = {
   m2: 'M.2 NVMe',
   pcie: 'PCIe x16',
   display: 'Monitor',
+
+  wallSocket: 'Wall Socket · 230 V',
+  psuInlet: 'AC Inlet',
+  psuEmi: 'EMI Filter',
+  psuRectifier: 'Bridge + Bulk Caps',
+  psuPfc: 'Active PFC',
+  psuSwitching: 'Switching MOSFETs',
+  psuTransformer: 'Main Transformer',
+  psuStandby: 'Standby Flyback',
+  psuSecondary: 'Rectification',
+  psuFilter: 'LC Filter',
+  psuSupervisor: 'Supervisory IC',
+  psuOutput: 'Output Block',
 };
 
 /**

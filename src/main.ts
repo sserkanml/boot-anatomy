@@ -1,5 +1,9 @@
 import './ui/styles.css';
 
+import { Vector3 } from 'three';
+
+import { PSU_SEQUENCE_STEPS } from './config/bootSteps';
+import { VIEW_CAMERAS, VIEW_FLIGHT_DURATION } from './config/constants';
 import { Picker } from './core/Picker';
 import { SceneManager } from './core/SceneManager';
 import { createLighting } from './core/lighting';
@@ -33,30 +37,49 @@ function bootstrap(): void {
   createEnvironment(manager.scene);
 
   const board = new BoardScene(manager.scene);
-  const sequence = new BootSequence();
 
-  // State machine -> scene. The UI subscribes to the same events on its own.
-  sequence.on('step:enter', ({ step, index }) => board.applyStep(step, index));
-  sequence.on('progress', ({ stepProgress }) => board.setStepProgress(stepProgress));
+  // Two chains: the board story, and the PSU internals played inside the unit.
+  // The PSU chain has no passive step, so it starts at index 0.
+  const sequence = new BootSequence();
+  const psuSequence = new BootSequence(PSU_SEQUENCE_STEPS, 0);
+
+  // State machines -> scene. Only one chain runs at a time, so both can drive
+  // the same scene without stepping on each other.
+  for (const chain of [sequence, psuSequence]) {
+    chain.on('step:enter', ({ step, index }) => board.applyStep(step, index));
+    chain.on('progress', ({ stepProgress }) => board.setStepProgress(stepProgress));
+  }
   sequence.on('state', ({ state }) => {
     if (state === 'idle') board.reset();
   });
 
-  const ui = new UILayer(uiContainer, sequence);
+  const ui = new UILayer(uiContainer, sequence, psuSequence, {
+    onViewChange: (view) => {
+      board.setView(view);
+      const framing = VIEW_CAMERAS[view];
+      manager.flyTo(
+        new Vector3(...framing.position),
+        new Vector3(...framing.target),
+        VIEW_FLIGHT_DURATION,
+      );
+    },
+  });
 
-  // Clicking the PSU (or activating its label) opens the walkthrough of what
-  // happens inside it, between the wall socket and the DC rails.
+  // Clicking the PSU (or activating its label) goes inside it, where the stages
+  // between the wall socket and the DC rails play out in the scene itself.
   const picker = new Picker(manager.camera, manager.renderer.domElement);
   picker.register(board.psuObject, {
-    onSelect: () => ui.openPsuModal(),
+    onSelect: () => ui.enterPsuView(0),
     onHoverChange: (hovered) => board.setPsuHighlighted(hovered),
   });
-  board.onPsuActivate = () => ui.openPsuModal();
+  board.onPsuActivate = () => ui.enterPsuView(0);
 
   manager.onRender((dt, elapsed) => {
     sequence.update(dt);
+    psuSequence.update(dt);
     board.update(dt, elapsed);
-    picker.setEnabled(!ui.isModalOpen);
+    // Picking the PSU again while already inside it would be a no-op at best.
+    picker.setEnabled(!ui.isModalOpen && !ui.isPsuViewOpen);
     picker.update();
   });
 

@@ -24,6 +24,8 @@ export interface PsuObject {
   setRunning(running: boolean): void;
   /** Lights the shell to signal that the PSU can be clicked. */
   setHighlighted(highlighted: boolean): void;
+  /** Fades the casing out so the internals become visible. */
+  setShellOpacity(opacity: number): void;
   dispose(): void;
 }
 
@@ -135,6 +137,16 @@ export function createPsu(): PsuObject {
     },
     setHighlighted(value: boolean) {
       highlightTarget = value ? 1 : 0;
+    },
+    setShellOpacity(value: number) {
+      // Only the casing fades; the cable stays solid so the run to the
+      // motherboard is still readable from inside the unit.
+      for (const material of [shell, dark, fanMaterial]) {
+        material.transparent = value < 1;
+        material.opacity = value;
+        material.depthWrite = value >= 1;
+        material.needsUpdate = true;
+      }
     },
     dispose() {
       root.traverse((object) => {

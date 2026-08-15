@@ -29,10 +29,19 @@ export class BootSequence extends Emitter<BootEvents> {
   private currentState: BootState = 'idle';
   private paused = false;
   private speed = 1;
+  /**
+   * Index the chain starts from. The main chain reserves index 0 for a passive
+   * step shown at idle; the PSU sub-chain has no such step and starts at 0.
+   */
+  private readonly firstActive: number;
 
-  constructor(steps: readonly BootStep[] = BOOT_STEPS) {
+  constructor(
+    steps: readonly BootStep[] = BOOT_STEPS,
+    firstActiveIndex: number = FIRST_ACTIVE_STEP,
+  ) {
     super();
     this.steps = steps;
+    this.firstActive = firstActiveIndex;
   }
 
   get state(): BootState {
@@ -55,7 +64,7 @@ export class BootSequence extends Emitter<BootEvents> {
   /** Total duration (ms) — from the first active step to the end of the chain. */
   get totalDuration(): number {
     return this.steps
-      .slice(FIRST_ACTIVE_STEP)
+      .slice(this.firstActive)
       .reduce((sum, step) => sum + step.duration, 0);
   }
 
@@ -74,7 +83,7 @@ export class BootSequence extends Emitter<BootEvents> {
   start(): void {
     if (this.currentState === 'running') return;
     this.paused = false;
-    this.goTo(FIRST_ACTIVE_STEP);
+    this.goTo(this.firstActive);
     this.setState('running');
   }
 
@@ -90,7 +99,7 @@ export class BootSequence extends Emitter<BootEvents> {
 
   /** Goes back to the previous step. */
   previous(): void {
-    if (this.index <= FIRST_ACTIVE_STEP) return;
+    if (this.index <= this.firstActive) return;
     this.goTo(this.index - 1);
     this.setState('running');
   }
@@ -101,7 +110,7 @@ export class BootSequence extends Emitter<BootEvents> {
     if (clamped === this.index && this.currentState !== 'complete') return;
     // Change the state first: 'idle' listeners clear the scene, so they have to
     // run before the new step's paths are built.
-    this.setState(clamped === 0 ? 'idle' : 'running');
+    this.setState(clamped < this.firstActive ? 'idle' : 'running');
     this.goTo(clamped);
   }
 
@@ -167,7 +176,7 @@ export class BootSequence extends Emitter<BootEvents> {
     const stepProgress = Math.min(1, this.elapsed / this.currentStep.duration);
 
     let elapsedBefore = 0;
-    for (let i = FIRST_ACTIVE_STEP; i < this.index; i += 1) {
+    for (let i = this.firstActive; i < this.index; i += 1) {
       elapsedBefore += this.steps[i]!.duration;
     }
     const total = this.totalDuration;

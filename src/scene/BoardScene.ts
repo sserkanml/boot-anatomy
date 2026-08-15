@@ -1,12 +1,14 @@
 import { Group, type Object3D, type Scene } from 'three';
+import { BOARD_VIEW_ANCHORS, PSU_VIEW_ANCHORS } from '../config/anchors';
 import { BOOT_STEPS } from '../config/bootSteps';
 import { SignalOrchestrator } from '../signals/SignalOrchestrator';
-import type { BootStep } from '../types';
+import type { BootStep, SceneView } from '../types';
 import { AnchorLabels } from './AnchorLabels';
 import { AnchorRegistry } from './AnchorRegistry';
 import { createMonitor, type MonitorObject } from './monitor';
 import { createPlaceholderBoard, createPowerButtonProp } from './placeholderBoard';
 import { createPsu, type PsuObject } from './psu';
+import { createPsuInternals, type PsuInternals } from './psuInternals';
 
 /** The PSU fan spins from this step onward (when the main converter turns on). */
 const PSU_RUNNING_FROM = BOOT_STEPS.findIndex((step) => step.id === 'rails');
@@ -29,7 +31,9 @@ export class BoardScene {
   private readonly root = new Group();
   private readonly labels: AnchorLabels;
   private readonly psu: PsuObject;
+  private readonly internals: PsuInternals;
   private readonly monitor: MonitorObject;
+  private view: SceneView = 'board';
   private readonly placeholder = createPlaceholderBoard();
   private readonly powerButton = createPowerButtonProp();
   private model: Object3D | null = null;
@@ -44,6 +48,9 @@ export class BoardScene {
     this.psu = createPsu();
     this.root.add(this.psu.group);
 
+    this.internals = createPsuInternals();
+    this.root.add(this.internals.group);
+
     this.monitor = createMonitor();
     this.root.add(this.monitor.group);
 
@@ -51,6 +58,27 @@ export class BoardScene {
     this.labels = new AnchorLabels(this.anchors, this.root, {
       actions: { psu: () => this.onPsuActivate?.() },
     });
+    this.labels.setVisibleSet(BOARD_VIEW_ANCHORS);
+  }
+
+  /**
+   * Switches between framing the motherboard and looking inside the PSU. The
+   * board is deliberately left in place while the PSU is open, so the spatial
+   * relationship between the two is never lost.
+   */
+  setView(view: SceneView): void {
+    if (this.view === view) return;
+    this.view = view;
+
+    const inPsu = view === 'psu';
+    this.internals.setVisible(inPsu);
+    this.psu.setShellOpacity(inPsu ? 0.12 : 1);
+    this.labels.setVisibleSet(inPsu ? PSU_VIEW_ANCHORS : BOARD_VIEW_ANCHORS);
+    this.signals.clear();
+  }
+
+  get currentView(): SceneView {
+    return this.view;
   }
 
   /** The PSU assembly, registered with the Picker so it can be clicked. */
@@ -95,8 +123,14 @@ export class BoardScene {
 
     this.signals.enterStep(step);
     this.labels.setActive(step.highlight ?? []);
-    this.monitor.setScreen(step.screen ?? 'off', step.console ?? []);
-    this.psu.setRunning(PSU_RUNNING_FROM >= 0 && index >= PSU_RUNNING_FROM);
+    this.internals.setBarrierActive(step.id === 'psu-transformer');
+
+    // The monitor and the PSU fan follow the main chain only; stepping through
+    // the PSU internals must not rewind what the board is doing.
+    if ((step.view ?? 'board') === 'board') {
+      this.monitor.setScreen(step.screen ?? 'off', step.console ?? []);
+      this.psu.setRunning(PSU_RUNNING_FROM >= 0 && index >= PSU_RUNNING_FROM);
+    }
   }
 
   setStepProgress(progress: number): void {
@@ -113,6 +147,7 @@ export class BoardScene {
   update(dt: number, elapsed: number): void {
     this.signals.update(dt, elapsed);
     this.psu.update(dt);
+    this.internals.update(dt);
     this.monitor.update(dt);
   }
 
@@ -120,6 +155,7 @@ export class BoardScene {
     this.signals.dispose();
     this.labels.dispose();
     this.psu.dispose();
+    this.internals.dispose();
     this.monitor.dispose();
     this.placeholder.dispose();
     this.powerButton.dispose();

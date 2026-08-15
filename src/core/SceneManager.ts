@@ -38,6 +38,14 @@ export class SceneManager {
   private readonly resizeObserver: ResizeObserver;
   private elapsed = 0;
   private running = false;
+  private flight: {
+    fromPosition: Vector3;
+    toPosition: Vector3;
+    fromTarget: Vector3;
+    toTarget: Vector3;
+    elapsed: number;
+    duration: number;
+  } | null = null;
 
   constructor({ canvas, labelContainer }: SceneManagerOptions) {
     this.scene = new Scene();
@@ -113,6 +121,22 @@ export class SceneManager {
     this.controls.target.copy(target);
   }
 
+  /**
+   * Eases the camera to a new position and orbit target. Orbit input is
+   * suspended for the duration so a stray drag cannot fight the movement.
+   */
+  flyTo(position: Vector3, target: Vector3, duration = 1.4): void {
+    this.flight = {
+      fromPosition: this.camera.position.clone(),
+      toPosition: position.clone(),
+      fromTarget: this.controls.target.clone(),
+      toTarget: target.clone(),
+      elapsed: 0,
+      duration: Math.max(0.001, duration),
+    };
+    this.controls.enabled = false;
+  }
+
   dispose(): void {
     this.stop();
     window.removeEventListener('resize', this.resize);
@@ -127,12 +151,31 @@ export class SceneManager {
     const dt = Math.min(this.clock.getDelta(), 0.1);
     this.elapsed += dt;
 
+    this.advanceFlight(dt);
     this.controls.update();
     for (const update of this.updates) update(dt, this.elapsed);
 
     this.renderer.render(this.scene, this.camera);
     this.labelRenderer.render(this.scene, this.camera);
   };
+
+  private advanceFlight(dt: number): void {
+    const flight = this.flight;
+    if (!flight) return;
+
+    flight.elapsed += dt;
+    const t = Math.min(1, flight.elapsed / flight.duration);
+    // easeInOutCubic: settles without overshooting the framing.
+    const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+    this.camera.position.lerpVectors(flight.fromPosition, flight.toPosition, eased);
+    this.controls.target.lerpVectors(flight.fromTarget, flight.toTarget, eased);
+
+    if (t >= 1) {
+      this.flight = null;
+      this.controls.enabled = true;
+    }
+  }
 
   private resize = (): void => {
     const width = window.innerWidth;

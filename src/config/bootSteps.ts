@@ -1,13 +1,218 @@
-import type { BootStep, Phase } from '../types';
+import type { AnchorId, BootStep, Phase, SignalSpec } from '../types';
 import { RAIL_COLORS } from './constants';
+import { PSU_STAGES } from './psuStages';
 
 /** Phase names shown on the info panel badge. */
 export const PHASE_LABELS: Record<Phase, string> = {
+  psu: 'Inside the PSU',
   standby: 'Standby',
   power: 'Power Chain',
   firmware: 'Firmware',
   os: 'Operating System',
 };
+
+/**
+ * The 3D staging for each PSU stage: which internal components the energy
+ * travels between, and which of them light up.
+ *
+ * Kept separate from PSU_STAGES so the prose stays in one place and is shared
+ * with the block-diagram dialog, while the scene routing lives here.
+ */
+const PSU_STAGE_SCENE: Record<
+  string,
+  { signals: SignalSpec[]; highlight: AnchorId[] }
+> = {
+  'ac-emi': {
+    highlight: ['wallSocket', 'psuInlet', 'psuEmi'],
+    signals: [
+      {
+        route: ['wallSocket', 'psuInlet'],
+        color: RAIL_COLORS.mains,
+        label: '230 V AC',
+        particles: 14,
+        thickness: 1.2,
+        spread: 0.6,
+      },
+      {
+        route: ['psuInlet', 'psuEmi'],
+        color: RAIL_COLORS.mains,
+        particles: 8,
+        delay: 0.45,
+        spread: 0.4,
+      },
+    ],
+  },
+  rectifier: {
+    highlight: ['psuEmi', 'psuRectifier'],
+    signals: [
+      {
+        route: ['psuEmi', 'psuRectifier'],
+        color: RAIL_COLORS.hvdc,
+        label: 'pulsating DC',
+        particles: 12,
+        thickness: 1.1,
+      },
+    ],
+  },
+  pfc: {
+    highlight: ['psuRectifier', 'psuPfc'],
+    signals: [
+      {
+        route: ['psuRectifier', 'psuPfc'],
+        color: RAIL_COLORS.hvdc,
+        label: '≈400 V DC',
+        particles: 12,
+        thickness: 1.1,
+      },
+    ],
+  },
+  switching: {
+    highlight: ['psuPfc', 'psuSwitching'],
+    signals: [
+      {
+        route: ['psuPfc', 'psuSwitching'],
+        color: RAIL_COLORS.hvdc,
+        label: '50–150 kHz',
+        particles: 18,
+        thickness: 1.1,
+      },
+    ],
+  },
+  transformer: {
+    highlight: ['psuSwitching', 'psuTransformer'],
+    signals: [
+      {
+        route: ['psuSwitching', 'psuTransformer'],
+        color: RAIL_COLORS.hvdc,
+        particles: 16,
+        thickness: 1.2,
+        spread: 0.5,
+      },
+      {
+        route: ['psuTransformer', 'psuSecondary'],
+        color: RAIL_COLORS['+12V'],
+        label: 'across the barrier',
+        particles: 14,
+        delay: 0.45,
+        spread: 0.45,
+        thickness: 1.2,
+      },
+    ],
+  },
+  secondary: {
+    highlight: ['psuSecondary', 'psuFilter'],
+    signals: [
+      {
+        route: ['psuSecondary', 'psuFilter'],
+        color: RAIL_COLORS['+12V'],
+        label: '+12V / +5V / +3.3V',
+        particles: 12,
+        persist: true,
+        thickness: 1.1,
+      },
+    ],
+  },
+  standby: {
+    highlight: ['psuRectifier', 'psuStandby', 'psuOutput'],
+    signals: [
+      {
+        route: ['psuRectifier', 'psuStandby'],
+        color: RAIL_COLORS['+5VSB'],
+        particles: 8,
+        persist: true,
+        spread: 0.45,
+      },
+      {
+        route: ['psuStandby', 'psuOutput'],
+        color: RAIL_COLORS['+5VSB'],
+        label: '+5VSB',
+        particles: 10,
+        persist: true,
+        delay: 0.4,
+        spread: 0.45,
+      },
+    ],
+  },
+  feedback: {
+    highlight: ['psuFilter', 'psuSwitching'],
+    signals: [
+      {
+        route: ['psuFilter', 'psuSwitching'],
+        color: RAIL_COLORS.data,
+        label: 'optocoupler',
+        particles: 10,
+        thickness: 0.8,
+      },
+    ],
+  },
+  supervisor: {
+    highlight: ['psuFilter', 'psuSupervisor', 'psuOutput'],
+    signals: [
+      {
+        route: ['psuFilter', 'psuSupervisor'],
+        color: RAIL_COLORS.PWR_OK,
+        particles: 8,
+        spread: 0.45,
+      },
+      {
+        route: ['psuSupervisor', 'psuOutput'],
+        color: RAIL_COLORS.PWR_OK,
+        label: 'PWR_OK',
+        particles: 10,
+        delay: 0.4,
+        spread: 0.45,
+      },
+    ],
+  },
+  outputs: {
+    highlight: ['psuFilter', 'psuOutput', 'atx24'],
+    signals: [
+      {
+        route: ['psuFilter', 'psuOutput'],
+        color: RAIL_COLORS['+12V'],
+        particles: 10,
+        persist: true,
+        spread: 0.4,
+      },
+      {
+        route: ['psuOutput', 'atx24'],
+        color: RAIL_COLORS['+12V'],
+        label: 'to the motherboard',
+        particles: 14,
+        persist: true,
+        delay: 0.35,
+        spread: 0.5,
+        thickness: 1.3,
+      },
+    ],
+  },
+};
+
+/**
+ * The PSU stages as their own little chain, played inside the PSU view when the
+ * unit is clicked. Deliberately *not* part of the main boot chain: the board
+ * story stays at board level, and opening the PSU is a detour you take on
+ * purpose. Prose comes from PSU_STAGES, routing from PSU_STAGE_SCENE.
+ */
+export const PSU_SEQUENCE_STEPS: BootStep[] = PSU_STAGES.map((stage) => {
+  const scene = PSU_STAGE_SCENE[stage.id];
+  if (!scene) throw new Error(`No 3D staging defined for PSU stage: ${stage.id}`);
+
+  return {
+    id: `psu-${stage.id}`,
+    phase: 'psu',
+    title: stage.title,
+    signal: stage.badge,
+    description: stage.bootNote
+      ? `${stage.description} ${stage.bootNote}`
+      : stage.description,
+    duration: 5400,
+    view: 'psu',
+    screen: 'off',
+    highlight: scene.highlight,
+    signals: scene.signals,
+  };
+});
 
 /**
  * The boot chain — all of the content lives here. Adding a step is just adding
@@ -19,14 +224,18 @@ export const PHASE_LABELS: Record<Phase, string> = {
  */
 export const BOOT_STEPS: BootStep[] = [
   {
-    id: 'standby',
+    id: 'psu',
     phase: 'standby',
-    title: 'Standby Power Is Already On',
+    title: 'PSU — Plugged In, Standby Up',
     signal: '+5VSB',
     description:
       'As long as the machine is plugged in, a small standby converter inside the PSU keeps producing the +5VSB rail. It enters the board on pin 9 of the 24-pin connector and feeds the Super I/O / EC. The system looks "off" (ACPI S5), but the circuit listening for the power button is very much alive.',
     duration: 4500,
     screen: 'off',
+    schematic: true,
+    // Shown nested in the timeline. These play inside the PSU view rather than
+    // in the main chain — see PSU_SEQUENCE_STEPS.
+    substeps: PSU_SEQUENCE_STEPS,
     highlight: ['psu', 'atx24', 'superio'],
     signals: [
       {

@@ -91,8 +91,8 @@ export const VIEW_CAMERAS = {
     target: CAMERA.target,
   },
   psu: {
-    position: [37, 16, 22] as const,
-    target: [22, 1.2, 2] as const,
+    position: [40, 15, 27] as const,
+    target: [21, 2, 6] as const,
   },
 } as const;
 
