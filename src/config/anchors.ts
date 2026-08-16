@@ -1,6 +1,6 @@
 import { Vector3 } from 'three';
 import type { AnchorId } from '../types';
-import { PSU_BOX, SIGNAL_HEIGHT } from './constants';
+import { EC_CHIP, PSU_BOX, SIGNAL_HEIGHT } from './constants';
 
 /**
  * Anchors inside the PSU are authored in the unit's local frame (origin at the
@@ -10,6 +10,11 @@ import { PSU_BOX, SIGNAL_HEIGHT } from './constants';
 const [PSU_X, PSU_Y, PSU_Z] = PSU_BOX.position;
 const inPsu = (x: number, y: number, z: number): Vector3 =>
   new Vector3(PSU_X + x, PSU_Y + y, PSU_Z + z);
+
+/** Same idea for the exploded EC package: local frame, origin at its center. */
+const [EC_X, EC_Y, EC_Z] = EC_CHIP.position;
+const inEc = (x: number, y: number, z: number): Vector3 =>
+  new Vector3(EC_X + x, EC_Y + y, EC_Z + z);
 
 /**
  * Anchor layout, expressed in the scene's coordinate frame:
@@ -60,6 +65,23 @@ export const DEFAULT_ANCHORS: Record<AnchorId, Vector3> = {
   psuFilter: inPsu(-3.6, -1.9, -1.6),
   psuSupervisor: inPsu(-3.6, -2.6, 1.4),
   psuOutput: inPsu(-3.6, -2.2, 4.6),
+
+  // --- Inside the EC ---
+  // Package pins sit at the edges, functional blocks on the die above them.
+  ecVsbIn: inEc(-7.6, 0.5, -3),
+  ecPwrbtnIn: inEc(-7.6, 0.5, 3),
+  ecPsonOut: inEc(7.6, 0.5, -4),
+  ecGpio: inEc(-4.6, 1.3, 2.6),
+  ecCore: inEc(0, 1.6, 0),
+  ecSram: inEc(-3.4, 1.3, -3.2),
+  ecEspi: inEc(3.4, 1.3, -3.4),
+  ecAdc: inEc(-2.2, 1.3, 4.2),
+  ecPwm: inEc(0.6, 1.3, 4.2),
+  ecI2c: inEc(3.4, 1.3, 4.2),
+  ecKbd: inEc(5.2, 1.3, 1.4),
+  ecWdt: inEc(4.8, 1.3, -1.2),
+  // The firmware flash is genuinely a separate chip, so it sits outside.
+  ecFlash: inEc(10.5, 0.6, -2),
 };
 
 /** Anchors labelled while the camera is framing the motherboard. */
@@ -95,6 +117,25 @@ export const PSU_VIEW_ANCHORS: AnchorId[] = [
   'atx24',
 ];
 
+/** Anchors labelled while the camera is inside the EC. */
+export const EC_VIEW_ANCHORS: AnchorId[] = [
+  'ecVsbIn',
+  'ecPwrbtnIn',
+  'ecPsonOut',
+  'ecGpio',
+  'ecCore',
+  'ecSram',
+  'ecEspi',
+  'ecAdc',
+  'ecPwm',
+  'ecI2c',
+  'ecKbd',
+  'ecWdt',
+  'ecFlash',
+  'powerButton',
+  'atx24',
+];
+
 /** Human-readable names shown in the label layer. */
 export const ANCHOR_LABELS: Record<AnchorId, string> = {
   psu: 'PSU',
@@ -123,6 +164,20 @@ export const ANCHOR_LABELS: Record<AnchorId, string> = {
   psuFilter: 'LC Filter',
   psuSupervisor: 'Supervisory IC',
   psuOutput: 'Output Block',
+
+  ecVsbIn: '+5VSB pin',
+  ecPwrbtnIn: 'PWRBTN# pin',
+  ecPsonOut: 'PS_ON# pin',
+  ecGpio: 'GPIO',
+  ecCore: 'EC Core',
+  ecSram: 'SRAM',
+  ecEspi: 'LPC / eSPI',
+  ecAdc: 'ADC',
+  ecPwm: 'PWM',
+  ecI2c: 'I2C / SMBus',
+  ecKbd: 'Keyboard',
+  ecWdt: 'Watchdog',
+  ecFlash: 'SPI NOR',
 };
 
 /**

@@ -7,6 +7,7 @@ import { UI } from './i18n/strings';
 import { t } from './i18n';
 
 import { PSU_SEQUENCE_STEPS } from './config/bootSteps';
+import { EC_SEQUENCE_STEPS } from './config/ecSequence';
 import { VIEW_CAMERAS, VIEW_FLIGHT_DURATION } from './config/constants';
 import { Picker } from './core/Picker';
 import { SceneManager } from './core/SceneManager';
@@ -47,10 +48,11 @@ function bootstrap(): void {
   // The PSU chain has no passive step, so it starts at index 0.
   const sequence = new BootSequence();
   const psuSequence = new BootSequence(PSU_SEQUENCE_STEPS, 0);
+  const ecSequence = new BootSequence(EC_SEQUENCE_STEPS, 0);
 
   // State machines -> scene. Only one chain runs at a time, so both can drive
   // the same scene without stepping on each other.
-  for (const chain of [sequence, psuSequence]) {
+  for (const chain of [sequence, psuSequence, ecSequence]) {
     chain.on('step:enter', ({ step, index }) => board.applyStep(step, index));
     chain.on('progress', ({ stepProgress }) => board.setStepProgress(stepProgress));
   }
@@ -69,7 +71,7 @@ function bootstrap(): void {
   };
 
   const createUI = (): UILayer =>
-    new UILayer(uiContainer, sequence, psuSequence, { onViewChange: applyView });
+    new UILayer(uiContainer, sequence, psuSequence, ecSequence, { onViewChange: applyView });
 
   let ui = createUI();
 
@@ -77,14 +79,14 @@ function bootstrap(): void {
   // component to re-translate itself, the whole DOM layer is rebuilt and the
   // sequences re-announce where they are — language changes are rare enough.
   onLanguageChange(() => {
-    const wasInPsu = ui.isPsuViewOpen;
-    const psuStage = psuSequence.currentIndex;
+    const restore = board.currentView === 'board' ? null : board.currentView;
+    const stage = restore === 'ec' ? ecSequence.currentIndex : psuSequence.currentIndex;
 
     ui.dispose();
     ui = createUI();
 
     sequence.emitCurrent();
-    if (wasInPsu) ui.enterPsuView(psuStage);
+    if (restore) ui.enterWalkthrough(restore, stage);
   });
 
   // Clicking the PSU (or activating its label) goes inside it, where the stages
@@ -95,12 +97,13 @@ function bootstrap(): void {
     onHoverChange: (hovered) => board.setPsuHighlighted(hovered),
   });
   board.onPsuActivate = () => ui.enterPsuView(0);
-  board.onEcActivate = () => ui.openEcModal();
+  board.onEcActivate = () => ui.openEcView();
   initLanguage();
 
   manager.onRender((dt, elapsed) => {
     sequence.update(dt);
     psuSequence.update(dt);
+    ecSequence.update(dt);
     board.update(dt, elapsed);
     // Picking the PSU again while already inside it would be a no-op at best.
     picker.setEnabled(!ui.isModalOpen && !ui.isPsuViewOpen);

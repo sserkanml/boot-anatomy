@@ -692,7 +692,8 @@ body {
   position: absolute;
   top: 24px;
   left: 26px;
-  right: 26px;
+  /* Stops short of the language switch, which stays reachable in every view. */
+  right: 130px;
   display: flex;
   align-items: center;
   justify-content: space-between;

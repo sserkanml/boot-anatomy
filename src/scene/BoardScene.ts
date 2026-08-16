@@ -1,5 +1,5 @@
 import { Group, type Object3D, type Scene } from 'three';
-import { BOARD_VIEW_ANCHORS, PSU_VIEW_ANCHORS } from '../config/anchors';
+import { BOARD_VIEW_ANCHORS, EC_VIEW_ANCHORS, PSU_VIEW_ANCHORS } from '../config/anchors';
 import { BOOT_STEPS } from '../config/bootSteps';
 import { SignalOrchestrator } from '../signals/SignalOrchestrator';
 import type { BootStep, SceneView } from '../types';
@@ -8,6 +8,7 @@ import { AnchorRegistry } from './AnchorRegistry';
 import { createMonitor, type MonitorObject } from './monitor';
 import { createPlaceholderBoard, createPowerButtonProp } from './placeholderBoard';
 import { createPsu, type PsuObject } from './psu';
+import { createEcInternals, type EcInternals } from './ecInternals';
 import { createPsuInternals, type PsuInternals } from './psuInternals';
 
 /** The PSU fan spins from this step onward (when the main converter turns on). */
@@ -35,6 +36,7 @@ export class BoardScene {
   private readonly labels: AnchorLabels;
   private readonly psu: PsuObject;
   private readonly internals: PsuInternals;
+  private readonly ecInternals: EcInternals;
   private readonly monitor: MonitorObject;
   private view: SceneView = 'board';
   private readonly placeholder = createPlaceholderBoard();
@@ -53,6 +55,9 @@ export class BoardScene {
 
     this.internals = createPsuInternals();
     this.root.add(this.internals.group);
+
+    this.ecInternals = createEcInternals();
+    this.root.add(this.ecInternals.group);
 
     this.monitor = createMonitor();
     this.root.add(this.monitor.group);
@@ -77,9 +82,14 @@ export class BoardScene {
     this.view = view;
 
     const inPsu = view === 'psu';
+    const inEc = view === 'ec';
+
     this.internals.setVisible(inPsu);
     this.psu.setShellOpacity(inPsu ? 0.12 : 1);
-    this.labels.setVisibleSet(inPsu ? PSU_VIEW_ANCHORS : BOARD_VIEW_ANCHORS);
+    this.ecInternals.setVisible(inEc);
+
+    const labelSet = inPsu ? PSU_VIEW_ANCHORS : inEc ? EC_VIEW_ANCHORS : BOARD_VIEW_ANCHORS;
+    this.labels.setVisibleSet(labelSet);
     this.signals.clear();
   }
 
@@ -154,6 +164,7 @@ export class BoardScene {
     this.signals.update(dt, elapsed);
     this.psu.update(dt);
     this.internals.update(dt);
+    this.ecInternals.update(dt);
     this.monitor.update(dt);
   }
 
@@ -162,6 +173,7 @@ export class BoardScene {
     this.labels.dispose();
     this.psu.dispose();
     this.internals.dispose();
+    this.ecInternals.dispose();
     this.monitor.dispose();
     this.placeholder.dispose();
     this.powerButton.dispose();

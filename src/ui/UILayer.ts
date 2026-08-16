@@ -1,5 +1,7 @@
 import { t } from '../i18n';
 import { UI } from '../i18n/strings';
+import { EC_SEQUENCE_STEPS } from '../config/ecSequence';
+import { PSU_SEQUENCE_STEPS } from '../config/bootSteps';
 import type { BootSequence } from '../state/BootSequence';
 import type { SceneView, SubstepAction } from '../types';
 import { ConsolePanel } from './ConsolePanel';
@@ -37,6 +39,7 @@ export class UILayer {
   private readonly ecModal: ReferenceModal;
   private readonly psuPowerUpModal: ReferenceModal;
   private readonly psuPanel: PsuPanel;
+  private readonly ecPanel: PsuPanel;
   private readonly disposers: Array<() => void> = [];
   /** Whether the board chain should resume once we leave the PSU. */
   private resumeAfterPsu = false;
@@ -45,6 +48,7 @@ export class UILayer {
     private readonly root: HTMLElement,
     private readonly sequence: BootSequence,
     private readonly psuSequence: BootSequence,
+    private readonly ecSequence: BootSequence,
     private readonly handlers: UIHandlers,
   ) {
     this.infoPanel = new InfoPanel(sequence.steps.length, (step) =>
@@ -53,7 +57,7 @@ export class UILayer {
     this.consolePanel = new ConsolePanel();
     this.timeline = new Timeline(sequence.steps, {
       onSelect: (index) => {
-        this.exitPsuView();
+        this.exitWalkthrough();
         sequence.seek(index);
       },
       onSelectSubstep: (parentIndex, substepIndex) =>
@@ -70,10 +74,16 @@ export class UILayer {
     this.psuModal = createPsuModal();
     this.ecModal = createEcModal();
     this.psuPowerUpModal = createPsuPowerUpModal();
-    this.psuPanel = new PsuPanel(psuSequence, {
-      onExit: () => this.exitPsuView(),
-      onSchematic: () => this.psuModal.openAt(0),
-    });
+    this.psuPanel = new PsuPanel(
+      psuSequence,
+      { id: 'psu', eyebrow: UI.psuEyebrow, title: UI.psuTitle, steps: PSU_SEQUENCE_STEPS },
+      { onExit: () => this.exitWalkthrough(), onSchematic: () => this.psuModal.openAt(0) },
+    );
+    this.ecPanel = new PsuPanel(
+      ecSequence,
+      { id: 'ec', eyebrow: UI.ecEyebrow, title: UI.ecViewTitle, steps: EC_SEQUENCE_STEPS },
+      { onExit: () => this.exitWalkthrough(), onSchematic: () => this.ecModal.openAt(0) },
+    );
 
     this.root.append(
       this.createBrand(),
@@ -84,6 +94,7 @@ export class UILayer {
       this.controls.element,
       this.createHint(),
       this.psuPanel.element,
+      this.ecPanel.element,
       this.psuModal.element,
       this.ecModal.element,
       this.psuPowerUpModal.element,
@@ -94,31 +105,43 @@ export class UILayer {
   }
 
   /**
-   * Opens the PSU view and starts its chain at the given stage. The board chain
-   * is paused so the two are never animating at once.
+   * Opens a walkthrough view and starts its chain at the given stage. The board
+   * chain is paused so the two are never animating at once.
    */
-  enterPsuView(stageIndex = 0): void {
-    if (!this.psuPanel.isOpen) {
+  enterWalkthrough(view: 'psu' | 'ec', stageIndex = 0): void {
+    const panel = view === 'ec' ? this.ecPanel : this.psuPanel;
+    const chain = view === 'ec' ? this.ecSequence : this.psuSequence;
+
+    if (!panel.isOpen) {
+      // Leaving whichever one might already be open keeps the two exclusive.
+      this.exitWalkthrough();
       this.resumeAfterPsu = this.sequence.state === 'running' && !this.sequence.isPaused;
       this.sequence.setPaused(true);
       this.controls.setPaused(true);
       this.root.classList.add('is-psu-view');
-      this.psuPanel.show();
-      this.handlers.onViewChange('psu');
+      panel.show();
+      this.handlers.onViewChange(view);
     }
 
-    this.psuSequence.setPaused(false);
-    this.psuPanel.setPaused(false);
+    chain.setPaused(false);
+    panel.setPaused(false);
     // seek() alone would leave stage 0 idle, so start the chain first.
-    this.psuSequence.start();
-    this.psuSequence.seek(stageIndex);
+    chain.start();
+    chain.seek(stageIndex);
   }
 
-  exitPsuView(): void {
-    if (!this.psuPanel.isOpen) return;
+  /** Backwards-compatible entry point for the PSU, used by the picker. */
+  enterPsuView(stageIndex = 0): void {
+    this.enterWalkthrough('psu', stageIndex);
+  }
+
+  exitWalkthrough(): void {
+    const open = this.psuPanel.isOpen ? this.psuPanel : this.ecPanel.isOpen ? this.ecPanel : null;
+    if (!open) return;
 
     this.psuSequence.setPaused(true);
-    this.psuPanel.hide();
+    this.ecSequence.setPaused(true);
+    open.hide();
     this.root.classList.remove('is-psu-view');
     this.handlers.onViewChange('board');
 
@@ -127,7 +150,7 @@ export class UILayer {
   }
 
   get isPsuViewOpen(): boolean {
-    return this.psuPanel.isOpen;
+    return this.psuPanel.isOpen || this.ecPanel.isOpen;
   }
 
   /**
@@ -135,18 +158,24 @@ export class UILayer {
    * explored in the scene itself; the EC, being a single chip, in a dialog.
    */
   private openSubsteps(action: SubstepAction | undefined, index: number): void {
-    if (action === 'ec') this.ecModal.openAt(index);
+    if (action === 'ec') this.enterWalkthrough('ec', index);
     else if (action === 'psu-powerup') this.psuPowerUpModal.openAt(index);
-    else this.enterPsuView(index);
+    else this.enterWalkthrough('psu', index);
   }
 
-  /** Opens the EC walkthrough; wired to the Super I/O / EC label. */
-  openEcModal(): void {
-    this.ecModal.openAt(0);
+  /** Opens the EC walkthrough in the scene; wired to the Super I/O / EC label. */
+  openEcView(): void {
+    this.enterWalkthrough('ec', 0);
   }
 
   get isModalOpen(): boolean {
     return this.psuModal.isOpen || this.ecModal.isOpen || this.psuPowerUpModal.isOpen;
+  }
+
+  private get activePanel(): PsuPanel | null {
+    if (this.psuPanel.isOpen) return this.psuPanel;
+    if (this.ecPanel.isOpen) return this.ecPanel;
+    return null;
   }
 
   dispose(): void {
@@ -192,15 +221,19 @@ export class UILayer {
       if (this.isModalOpen) return;
 
       // Inside the PSU the same keys drive the PSU chain instead.
-      const active = this.psuPanel.isOpen ? this.psuSequence : this.sequence;
+      const active = this.psuPanel.isOpen
+        ? this.psuSequence
+        : this.ecPanel.isOpen
+          ? this.ecSequence
+          : this.sequence;
 
       switch (event.key) {
         case 'Escape':
-          this.exitPsuView();
+          this.exitWalkthrough();
           break;
         case ' ':
           event.preventDefault();
-          if (this.psuPanel.isOpen) this.psuPanel.setPaused(active.togglePaused());
+          if (this.isPsuViewOpen) this.activePanel?.setPaused(active.togglePaused());
           else if (active.state === 'idle') active.start();
           else this.controls.setPaused(active.togglePaused());
           break;
@@ -212,7 +245,7 @@ export class UILayer {
           break;
         case 'r':
         case 'R':
-          if (!this.psuPanel.isOpen) active.reset();
+          if (!this.isPsuViewOpen) active.reset();
           break;
         default:
           break;

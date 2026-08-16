@@ -33,13 +33,27 @@ export type AnchorId =
   | 'psuFilter' // Output inductors and capacitors
   | 'psuStandby' // Standby flyback transformer
   | 'psuSupervisor' // Supervisory IC
-  | 'psuOutput'; // Output connector block
+  | 'psuOutput' // Output connector block
+  // --- Inside the EC, revealed in the 'ec' view ---
+  | 'ecVsbIn' // Standby power pin
+  | 'ecPwrbtnIn' // PWRBTN# pin from the front panel
+  | 'ecGpio' // GPIO bank on the die
+  | 'ecCore' // The processor core
+  | 'ecSram' // On-die working memory
+  | 'ecFlash' // External SPI NOR holding EC firmware
+  | 'ecEspi' // LPC / eSPI interface to the PCH
+  | 'ecAdc'
+  | 'ecPwm'
+  | 'ecI2c'
+  | 'ecKbd'
+  | 'ecWdt'
+  | 'ecPsonOut'; // Pin driving PS_ON#
 
 /** Top-level phases of the boot chain — used for colors/badges in the UI. */
 export type Phase = 'psu' | 'standby' | 'power' | 'firmware' | 'os';
 
 /** Which part of the scene a step is staged in. */
-export type SceneView = 'board' | 'psu';
+export type SceneView = 'board' | 'psu' | 'ec';
 
 /**
  * A stage in a walkthrough dialog: one entry in the list, one highlighted set

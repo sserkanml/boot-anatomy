@@ -54,6 +54,11 @@ export const UI: Record<string, Localized> = {
     tr: 'Sekiz adımın arkasındaki terimler. EC, kart üzerinde en az konuşulan ve bir makinenin açılmamasının sebebi olma ihtimali en yüksek olan yongadır.',
   },
   ecLookInside: { en: 'Inside the EC →', tr: 'EC’nin içine bak →' },
+  ecViewTitle: {
+    en: 'From the button press to PS_ON#',
+    tr: 'Düğmeye basıştan PS_ON#’a',
+  },
+  ecStages: { en: 'EC stages', tr: 'EC aşamaları' },
 
   psuPowerUpEyebrow: { en: 'PSU Power-Up Sequence', tr: 'PSU Açılış Sırası' },
   psuPowerUpTitle: {

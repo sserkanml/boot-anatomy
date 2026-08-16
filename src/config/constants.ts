@@ -28,6 +28,17 @@ export const FLOOR_Y = -1.5;
  */
 export const SIGNAL_HEIGHT = 2.4;
 
+/**
+ * The EC shown as an exploded package, hovering just off the front-right corner
+ * of the board near where the real Super I/O sits. Massively out of scale on
+ * purpose — the point is to read the blocks, not to model a 5mm QFP.
+ */
+export const EC_CHIP = {
+  width: 14,
+  depth: 14,
+  position: [9, 9.5, 13] as const,
+};
+
 /** Placeholder monitor — behind the board, facing the camera. */
 export const MONITOR = {
   width: 22,
@@ -93,6 +104,10 @@ export const VIEW_CAMERAS = {
   psu: {
     position: [40, 15, 27] as const,
     target: [21, 2, 6] as const,
+  },
+  ec: {
+    position: [24, 29, 41] as const,
+    target: [8, 8, 12] as const,
   },
 } as const;
 
