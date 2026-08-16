@@ -82,6 +82,15 @@ export const DEFAULT_ANCHORS: Record<AnchorId, Vector3> = {
   ecWdt: inEc(4.8, 1.3, -1.2),
   // The firmware flash is genuinely a separate chip, so it sits outside.
   ecFlash: inEc(10.5, 0.6, -2),
+
+  // --- Board power management ---
+  // The CPU takes several separate rails, not one; these are the points the
+  // VRM feeds them to, spread around the socket so the order is visible.
+  sequencer: new Vector3(9.8, SIGNAL_HEIGHT, -6.5),
+  vcore: new Vector3(5.2, SIGNAL_HEIGHT, 0.4),
+  vccsa: new Vector3(3.0, SIGNAL_HEIGHT, -1.4),
+  vccio: new Vector3(7.4, SIGNAL_HEIGHT, -1.2),
+  vddq: new Vector3(4.0, SIGNAL_HEIGHT, 5.0),
 };
 
 /** Anchors labelled while the camera is framing the motherboard. */
@@ -136,6 +145,22 @@ export const EC_VIEW_ANCHORS: AnchorId[] = [
   'atx24',
 ];
 
+/** Anchors labelled while the camera is on the board's power management. */
+export const VRM_VIEW_ANCHORS: AnchorId[] = [
+  'atx24',
+  'eps12v',
+  'chipset',
+  'superio',
+  'vrm',
+  'sequencer',
+  'cpu',
+  'vcore',
+  'vccsa',
+  'vccio',
+  'vddq',
+  'ram',
+];
+
 /** Human-readable names shown in the label layer. */
 export const ANCHOR_LABELS: Record<AnchorId, string> = {
   psu: 'PSU',
@@ -178,6 +203,12 @@ export const ANCHOR_LABELS: Record<AnchorId, string> = {
   ecKbd: 'Keyboard',
   ecWdt: 'Watchdog',
   ecFlash: 'SPI NOR',
+
+  sequencer: 'Sequencer',
+  vcore: 'Vcore',
+  vccsa: 'VCCSA',
+  vccio: 'VCCIO',
+  vddq: 'VDDQ',
 };
 
 /**

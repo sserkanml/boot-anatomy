@@ -8,6 +8,7 @@ import { t } from './i18n';
 
 import { PSU_SEQUENCE_STEPS } from './config/bootSteps';
 import { EC_SEQUENCE_STEPS } from './config/ecSequence';
+import { VRM_SEQUENCE_STEPS } from './config/vrmSequence';
 import { VIEW_CAMERAS, VIEW_FLIGHT_DURATION } from './config/constants';
 import { Picker } from './core/Picker';
 import { SceneManager } from './core/SceneManager';
@@ -49,10 +50,11 @@ function bootstrap(): void {
   const sequence = new BootSequence();
   const psuSequence = new BootSequence(PSU_SEQUENCE_STEPS, 0);
   const ecSequence = new BootSequence(EC_SEQUENCE_STEPS, 0);
+  const vrmSequence = new BootSequence(VRM_SEQUENCE_STEPS, 0);
 
   // State machines -> scene. Only one chain runs at a time, so both can drive
   // the same scene without stepping on each other.
-  for (const chain of [sequence, psuSequence, ecSequence]) {
+  for (const chain of [sequence, psuSequence, ecSequence, vrmSequence]) {
     chain.on('step:enter', ({ step, index }) => board.applyStep(step, index));
     chain.on('progress', ({ stepProgress }) => board.setStepProgress(stepProgress));
   }
@@ -71,7 +73,9 @@ function bootstrap(): void {
   };
 
   const createUI = (): UILayer =>
-    new UILayer(uiContainer, sequence, psuSequence, ecSequence, { onViewChange: applyView });
+    new UILayer(uiContainer, sequence, psuSequence, ecSequence, vrmSequence, {
+      onViewChange: applyView,
+    });
 
   let ui = createUI();
 
@@ -80,7 +84,12 @@ function bootstrap(): void {
   // sequences re-announce where they are — language changes are rare enough.
   onLanguageChange(() => {
     const restore = board.currentView === 'board' ? null : board.currentView;
-    const stage = restore === 'ec' ? ecSequence.currentIndex : psuSequence.currentIndex;
+    const stage =
+      restore === 'ec'
+        ? ecSequence.currentIndex
+        : restore === 'vrm'
+          ? vrmSequence.currentIndex
+          : psuSequence.currentIndex;
 
     ui.dispose();
     ui = createUI();
@@ -104,6 +113,7 @@ function bootstrap(): void {
     sequence.update(dt);
     psuSequence.update(dt);
     ecSequence.update(dt);
+    vrmSequence.update(dt);
     board.update(dt, elapsed);
     // Picking the PSU again while already inside it would be a no-op at best.
     picker.setEnabled(!ui.isModalOpen && !ui.isPsuViewOpen);

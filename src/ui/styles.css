@@ -1803,3 +1803,7 @@ body {
     animation: none;
   }
 }
+
+.psu-schematic[hidden] {
+  display: none;
+}

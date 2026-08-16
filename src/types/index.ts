@@ -47,13 +47,19 @@ export type AnchorId =
   | 'ecI2c'
   | 'ecKbd'
   | 'ecWdt'
-  | 'ecPsonOut'; // Pin driving PS_ON#
+  | 'ecPsonOut' // Pin driving PS_ON#
+  // --- Board power management, revealed in the 'vrm' view ---
+  | 'sequencer' // Chip ordering the rails
+  | 'vcore' // CPU core voltage
+  | 'vccsa' // System agent
+  | 'vccio' // I/O voltage
+  | 'vddq'; // Memory voltage
 
 /** Top-level phases of the boot chain — used for colors/badges in the UI. */
 export type Phase = 'psu' | 'standby' | 'power' | 'firmware' | 'os';
 
 /** Which part of the scene a step is staged in. */
-export type SceneView = 'board' | 'psu' | 'ec';
+export type SceneView = 'board' | 'psu' | 'ec' | 'vrm';
 
 /**
  * A stage in a walkthrough dialog: one entry in the list, one highlighted set
@@ -83,7 +89,7 @@ export interface SubstepRef {
 }
 
 /** Where a step's nested stages are explored. */
-export type SubstepAction = 'psu' | 'ec' | 'psu-powerup';
+export type SubstepAction = 'psu' | 'ec' | 'psu-powerup' | 'vrm';
 
 /** Definition of a single visual signal path. */
 export interface SignalSpec {

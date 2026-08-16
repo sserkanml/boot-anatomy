@@ -1,5 +1,10 @@
 import { Group, type Object3D, type Scene } from 'three';
-import { BOARD_VIEW_ANCHORS, EC_VIEW_ANCHORS, PSU_VIEW_ANCHORS } from '../config/anchors';
+import {
+  BOARD_VIEW_ANCHORS,
+  EC_VIEW_ANCHORS,
+  PSU_VIEW_ANCHORS,
+  VRM_VIEW_ANCHORS,
+} from '../config/anchors';
 import { BOOT_STEPS } from '../config/bootSteps';
 import { SignalOrchestrator } from '../signals/SignalOrchestrator';
 import type { BootStep, SceneView } from '../types';
@@ -88,7 +93,14 @@ export class BoardScene {
     this.psu.setShellOpacity(inPsu ? 0.12 : 1);
     this.ecInternals.setVisible(inEc);
 
-    const labelSet = inPsu ? PSU_VIEW_ANCHORS : inEc ? EC_VIEW_ANCHORS : BOARD_VIEW_ANCHORS;
+    const labelSet =
+      inPsu
+        ? PSU_VIEW_ANCHORS
+        : inEc
+          ? EC_VIEW_ANCHORS
+          : view === 'vrm'
+            ? VRM_VIEW_ANCHORS
+            : BOARD_VIEW_ANCHORS;
     this.labels.setVisibleSet(labelSet);
     this.signals.clear();
   }

@@ -1,6 +1,7 @@
 import { t } from '../i18n';
 import { UI } from '../i18n/strings';
 import { EC_SEQUENCE_STEPS } from '../config/ecSequence';
+import { VRM_SEQUENCE_STEPS } from '../config/vrmSequence';
 import { PSU_SEQUENCE_STEPS } from '../config/bootSteps';
 import type { BootSequence } from '../state/BootSequence';
 import type { SceneView, SubstepAction } from '../types';
@@ -40,6 +41,7 @@ export class UILayer {
   private readonly psuPowerUpModal: ReferenceModal;
   private readonly psuPanel: PsuPanel;
   private readonly ecPanel: PsuPanel;
+  private readonly vrmPanel: PsuPanel;
   private readonly disposers: Array<() => void> = [];
   /** Whether the board chain should resume once we leave the PSU. */
   private resumeAfterPsu = false;
@@ -49,6 +51,7 @@ export class UILayer {
     private readonly sequence: BootSequence,
     private readonly psuSequence: BootSequence,
     private readonly ecSequence: BootSequence,
+    private readonly vrmSequence: BootSequence,
     private readonly handlers: UIHandlers,
   ) {
     this.infoPanel = new InfoPanel(sequence.steps.length, (step) =>
@@ -84,6 +87,12 @@ export class UILayer {
       { id: 'ec', eyebrow: UI.ecEyebrow, title: UI.ecViewTitle, steps: EC_SEQUENCE_STEPS },
       { onExit: () => this.exitWalkthrough(), onSchematic: () => this.ecModal.openAt(0) },
     );
+    this.vrmPanel = new PsuPanel(
+      vrmSequence,
+      { id: 'vrm', eyebrow: UI.vrmEyebrow, title: UI.vrmTitle, steps: VRM_SEQUENCE_STEPS },
+      // No diagram of its own: every actor here is already visible on the board.
+      { onExit: () => this.exitWalkthrough() },
+    );
 
     this.root.append(
       this.createBrand(),
@@ -95,6 +104,7 @@ export class UILayer {
       this.createHint(),
       this.psuPanel.element,
       this.ecPanel.element,
+      this.vrmPanel.element,
       this.psuModal.element,
       this.ecModal.element,
       this.psuPowerUpModal.element,
@@ -108,9 +118,11 @@ export class UILayer {
    * Opens a walkthrough view and starts its chain at the given stage. The board
    * chain is paused so the two are never animating at once.
    */
-  enterWalkthrough(view: 'psu' | 'ec', stageIndex = 0): void {
-    const panel = view === 'ec' ? this.ecPanel : this.psuPanel;
-    const chain = view === 'ec' ? this.ecSequence : this.psuSequence;
+  enterWalkthrough(view: 'psu' | 'ec' | 'vrm', stageIndex = 0): void {
+    const panel =
+      view === 'ec' ? this.ecPanel : view === 'vrm' ? this.vrmPanel : this.psuPanel;
+    const chain =
+      view === 'ec' ? this.ecSequence : view === 'vrm' ? this.vrmSequence : this.psuSequence;
 
     if (!panel.isOpen) {
       // Leaving whichever one might already be open keeps the two exclusive.
@@ -136,11 +148,12 @@ export class UILayer {
   }
 
   exitWalkthrough(): void {
-    const open = this.psuPanel.isOpen ? this.psuPanel : this.ecPanel.isOpen ? this.ecPanel : null;
+    const open = this.activePanel;
     if (!open) return;
 
     this.psuSequence.setPaused(true);
     this.ecSequence.setPaused(true);
+    this.vrmSequence.setPaused(true);
     open.hide();
     this.root.classList.remove('is-psu-view');
     this.handlers.onViewChange('board');
@@ -150,7 +163,7 @@ export class UILayer {
   }
 
   get isPsuViewOpen(): boolean {
-    return this.psuPanel.isOpen || this.ecPanel.isOpen;
+    return this.activePanel !== null;
   }
 
   /**
@@ -159,6 +172,7 @@ export class UILayer {
    */
   private openSubsteps(action: SubstepAction | undefined, index: number): void {
     if (action === 'ec') this.enterWalkthrough('ec', index);
+    else if (action === 'vrm') this.enterWalkthrough('vrm', index);
     else if (action === 'psu-powerup') this.psuPowerUpModal.openAt(index);
     else this.enterWalkthrough('psu', index);
   }
@@ -175,6 +189,7 @@ export class UILayer {
   private get activePanel(): PsuPanel | null {
     if (this.psuPanel.isOpen) return this.psuPanel;
     if (this.ecPanel.isOpen) return this.ecPanel;
+    if (this.vrmPanel.isOpen) return this.vrmPanel;
     return null;
   }
 
@@ -225,7 +240,9 @@ export class UILayer {
         ? this.psuSequence
         : this.ecPanel.isOpen
           ? this.ecSequence
-          : this.sequence;
+          : this.vrmPanel.isOpen
+            ? this.vrmSequence
+            : this.sequence;
 
       switch (event.key) {
         case 'Escape':

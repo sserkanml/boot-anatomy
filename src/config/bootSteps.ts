@@ -3,6 +3,7 @@ import type { AnchorId, BootStep, Phase, SignalSpec } from '../types';
 import { RAIL_COLORS } from './constants';
 import { EC_STAGES } from './ecStages';
 import { PSU_POWERUP_STAGES } from './psuPowerUp';
+import { VRM_SEQUENCE_STEPS } from './vrmSequence';
 import { PSU_STAGES } from './psuStages';
 
 /** Phase names shown on the info panel badge. */
@@ -407,6 +408,10 @@ export const BOOT_STEPS: BootStep[] = [
     },
     duration: 4400,
     screen: 'off',
+    // Once PWR_OK lands, the board has its own power-up to do before the CPU
+    // can run — see VRM_SEQUENCE_STEPS.
+    substeps: VRM_SEQUENCE_STEPS,
+    substepAction: 'vrm',
     highlight: ['psu', 'atx24', 'chipset', 'cpu'],
     console: ['[PSU] PWR_OK -> HIGH (after 214ms)', '[PCH] deasserting CPU RESET#'],
     signals: [

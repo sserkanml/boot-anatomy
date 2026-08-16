@@ -7,7 +7,8 @@ export interface PsuPanelHandlers {
   /** Leave this view and return to the board. */
   onExit: () => void;
   /** Open the block-diagram dialog. */
-  onSchematic: () => void;
+  /** Omit when the walkthrough has no diagram of its own. */
+  onSchematic?: () => void;
 }
 
 export interface PsuPanelConfig {
@@ -88,6 +89,10 @@ export class PsuPanel {
     this.pauseButton = this.query('[data-action="pause"]');
     this.card = this.query('.psu-view-detail');
 
+    // Nothing to open when the subject has no diagram of its own — the board
+    // power walkthrough plays out on components that are already visible.
+    if (!handlers.onSchematic) this.query<HTMLElement>('.psu-schematic').hidden = true;
+
     this.buildStageList();
 
     this.element.addEventListener('click', (event) => {
@@ -95,7 +100,7 @@ export class PsuPanel {
         .closest('[data-action]')
         ?.getAttribute('data-action');
       if (action === 'exit') handlers.onExit();
-      if (action === 'schematic') handlers.onSchematic();
+      if (action === 'schematic') handlers.onSchematic?.();
       if (action === 'prev') sequence.previous();
       if (action === 'next') sequence.next();
       if (action === 'pause') this.setPaused(sequence.togglePaused());

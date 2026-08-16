@@ -60,6 +60,17 @@ export const UI: Record<string, Localized> = {
   },
   ecStages: { en: 'EC stages', tr: 'EC aşamaları' },
 
+  vrmEyebrow: { en: 'Board Power Management', tr: 'Kart Güç Yönetimi' },
+  vrmTitle: {
+    en: 'From PWR_OK to CPU RESET#',
+    tr: 'PWR_OK’ten CPU RESET#’e',
+  },
+  vrmStages: { en: 'Board power stages', tr: 'Kart güç aşamaları' },
+  vrmLookInside: {
+    en: 'How the board powers up →',
+    tr: 'Kart nasıl açılıyor →',
+  },
+
   psuPowerUpEyebrow: { en: 'PSU Power-Up Sequence', tr: 'PSU Açılış Sırası' },
   psuPowerUpTitle: {
     en: 'From PS_ON# to PWR_OK',

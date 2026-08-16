@@ -1,5 +1,5 @@
 import { PHASE_LABELS } from '../config/bootSteps';
-import { t } from '../i18n';
+import { t, type Localized } from '../i18n';
 import { UI } from '../i18n/strings';
 import type { BootStep } from '../types';
 
@@ -74,12 +74,12 @@ export class InfoPanel {
     const hasSubsteps = (step.substeps?.length ?? 0) > 0;
     this.action.hidden = !hasSubsteps;
     if (hasSubsteps) {
-      this.action.textContent =
-        step.substepAction === 'ec'
-          ? t(UI.ecLookInside)
-          : step.substepAction === 'psu-powerup'
-            ? t(UI.psuPowerUpLookInside)
-            : t(UI.lookInsidePsu);
+      const labels: Record<string, Localized> = {
+        ec: UI.ecLookInside!,
+        'psu-powerup': UI.psuPowerUpLookInside!,
+        vrm: UI.vrmLookInside!,
+      };
+      this.action.textContent = t(labels[step.substepAction ?? ''] ?? UI.lookInsidePsu!);
     }
 
     // Trigger a short enter animation whenever the step changes.
