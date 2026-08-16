@@ -985,6 +985,132 @@ body {
   max-width: 78ch;
 }
 
+/* ---------- Waveform tab ---------- */
+
+.wave-stage {
+  margin-bottom: 30px;
+}
+
+.wave-stage-title {
+  margin: 0 0 6px;
+  font-size: 14.5px;
+  font-weight: 650;
+}
+
+.wave-stage-body {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text-dim);
+  max-width: 82ch;
+}
+
+.wave-panels {
+  display: grid;
+  gap: 12px;
+}
+
+/* A before/after pair reads as one comparison, so they sit together. */
+.wave-panels--paired {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.wave-card {
+  margin: 0;
+  padding: 14px 16px 10px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  /* Set per variant; the plot and the text both read off it. */
+  --wave-color: var(--text-dim);
+}
+
+.wave-card--neutral {
+  background: rgba(255, 255, 255, 0.035);
+  border-color: var(--panel-border);
+  --wave-color: #8fb6e8;
+}
+
+.wave-card--bad {
+  background: rgba(140, 58, 34, 0.42);
+  border-color: rgba(226, 118, 78, 0.35);
+  --wave-color: #f0885a;
+}
+
+.wave-card--good {
+  background: rgba(24, 84, 62, 0.42);
+  border-color: rgba(61, 220, 132, 0.28);
+  --wave-color: #59d99b;
+}
+
+.wave-card-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 6px;
+}
+
+.wave-card-label {
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--text);
+}
+
+.wave-card-caption {
+  font-size: 12.5px;
+  color: color-mix(in srgb, var(--wave-color) 70%, var(--text-dim));
+}
+
+.wave-plot {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.wave-axis {
+  stroke: rgba(255, 255, 255, 0.09);
+  stroke-width: 1;
+  stroke-dasharray: 4 5;
+}
+
+.wave-path {
+  fill: none;
+  stroke: var(--wave-color);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.wave-path--muted {
+  stroke: rgba(147, 164, 187, 0.5);
+}
+
+.wave-path--v12 {
+  stroke: #ffd166;
+}
+
+.wave-path--v5 {
+  stroke: #ff5c5c;
+}
+
+.wave-path--v33 {
+  stroke: #ff9f45;
+}
+
+.wave-path--standby {
+  stroke: #a77bff;
+}
+
+.wave-path--ok {
+  stroke: #5ec8ff;
+}
+
+.wave-trace-name {
+  fill: var(--text-faint);
+  font-family: var(--mono);
+  font-size: 10px;
+}
+
 /* ---------- Pinout tab ---------- */
 
 .pin-legend {

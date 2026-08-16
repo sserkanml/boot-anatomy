@@ -3,11 +3,13 @@ import { t } from '../i18n';
 import { UI } from '../i18n/strings';
 import { createPsuDiagram } from './psuDiagram';
 import { createFaqView, createPinoutView } from './psuReferenceViews';
+import { createWaveformView } from './psuWaveformView';
 
-export type PsuModalTab = 'diagram' | 'pinout' | 'faq';
+export type PsuModalTab = 'diagram' | 'waveforms' | 'pinout' | 'faq';
 
 const TABS: Array<{ id: PsuModalTab; labelKey: string }> = [
   { id: 'diagram', labelKey: 'tabDiagram' },
+  { id: 'waveforms', labelKey: 'tabWaveforms' },
   { id: 'pinout', labelKey: 'tabPinout' },
   { id: 'faq', labelKey: 'tabFaq' },
 ];
@@ -86,6 +88,7 @@ export class PsuModal {
           </div>
         </div>
 
+        <div class="psu-tabpanel" data-panel="waveforms" hidden>${createWaveformView()}</div>
         <div class="psu-tabpanel" data-panel="pinout" hidden>${createPinoutView()}</div>
         <div class="psu-tabpanel" data-panel="faq" hidden>${createFaqView()}</div>
 

@@ -37,6 +37,7 @@ export const UI: Record<string, Localized> = {
 
   modalEyebrow: { en: 'Power Supply Unit', tr: 'Power Supply Unit' },
   tabDiagram: { en: 'Block diagram', tr: 'Blok şeması' },
+  tabWaveforms: { en: 'Waveforms', tr: 'Dalga Şekilleri' },
   tabPinout: { en: 'Pinout', tr: 'Pinout' },
   tabFaq: { en: 'FAQ', tr: 'SSS' },
   close: { en: 'Close', tr: 'Kapat' },
@@ -59,6 +60,10 @@ export const UI: Record<string, Localized> = {
   faqIntro: {
     en: 'The terms used in the walkthrough, in the order they come up. Each answer explains why the part exists rather than just what it is called.',
     tr: 'Anlatımda geçen terimler, ortaya çıkış sıralarıyla. Her cevap parçanın adını değil, neden var olduğunu açıklıyor.',
+  },
+  waveformIntro: {
+    en: 'The same ten stages, seen as the signal rather than the components. Every trace here is generated from the equation that actually governs it, so the shapes are the real ones — including the ripple, which is a capacitor discharging while it waits for the next hump.',
+    tr: 'Aynı on aşama, bileşenler yerine sinyalin kendisi olarak. Buradaki her eğri, onu gerçekten yöneten denklemden üretiliyor; yani şekiller gerçek — ripple dahil, ki o da bir kondansatörün bir sonraki tümseği beklerken boşalmasından ibarettir.',
   },
   pinoutIntro: {
     en: 'Pin numbering follows the ATX specification, viewed from the wire entry side of the connector. Wire colors are the industry convention — individually sleeved cables often ignore them entirely, so never identify a rail by color alone.',
