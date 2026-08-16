@@ -91,6 +91,16 @@ export const DEFAULT_ANCHORS: Record<AnchorId, Vector3> = {
   vccsa: new Vector3(3.0, SIGNAL_HEIGHT, -1.4),
   vccio: new Vector3(7.4, SIGNAL_HEIGHT, -1.2),
   vddq: new Vector3(4.0, SIGNAL_HEIGHT, 5.0),
+
+  // --- CPU wake-up ---
+  // Blocks inside the package have no visible geometry, so they are spread
+  // across the socket footprint the way the VRM rails are.
+  cpuPll: new Vector3(7.6, SIGNAL_HEIGHT, -1.6),
+  cpuBsp: new Vector3(3.2, SIGNAL_HEIGHT, -0.4),
+  cpuAp: new Vector3(7.4, SIGNAL_HEIGHT, 3.0),
+  cpuUcode: new Vector3(3.0, SIGNAL_HEIGHT, 3.2),
+  // The firmware flash lives next to the PCH on a real board.
+  spiFlash: new Vector3(-8.2, SIGNAL_HEIGHT, 7.4),
 };
 
 /** Anchors labelled while the camera is framing the motherboard. */
@@ -143,6 +153,19 @@ export const EC_VIEW_ANCHORS: AnchorId[] = [
   'ecFlash',
   'powerButton',
   'atx24',
+];
+
+/** Anchors labelled while the camera is on the CPU coming out of reset. */
+export const CPU_VIEW_ANCHORS: AnchorId[] = [
+  // The generic CPU label is left out on purpose — the four internal blocks
+  // sit inside its footprint and say more.
+  'cpuPll',
+  'cpuBsp',
+  'cpuAp',
+  'cpuUcode',
+  'chipset',
+  'spiFlash',
+  'ram',
 ];
 
 /** Anchors labelled while the camera is on the board's power management. */
@@ -209,6 +232,12 @@ export const ANCHOR_LABELS: Record<AnchorId, string> = {
   vccsa: 'VCCSA',
   vccio: 'VCCIO',
   vddq: 'VDDQ',
+
+  cpuPll: 'PLL',
+  cpuBsp: 'BSP core',
+  cpuAp: 'AP cores',
+  cpuUcode: 'Patch RAM',
+  spiFlash: 'SPI Flash (UEFI)',
 };
 
 /**

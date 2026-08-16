@@ -53,13 +53,19 @@ export type AnchorId =
   | 'vcore' // CPU core voltage
   | 'vccsa' // System agent
   | 'vccio' // I/O voltage
-  | 'vddq'; // Memory voltage
+  | 'vddq' // Memory voltage
+  // --- Inside the CPU, revealed in the 'cpu' view ---
+  | 'spiFlash' // SPI NOR holding the firmware image
+  | 'cpuPll' // Internal PLLs feeding the clock domains
+  | 'cpuBsp' // The core elected Bootstrap Processor
+  | 'cpuAp' // The cores parked in wait-for-SIPI
+  | 'cpuUcode'; // Microcode patch RAM
 
 /** Top-level phases of the boot chain — used for colors/badges in the UI. */
 export type Phase = 'psu' | 'standby' | 'power' | 'firmware' | 'os';
 
 /** Which part of the scene a step is staged in. */
-export type SceneView = 'board' | 'psu' | 'ec' | 'vrm';
+export type SceneView = 'board' | 'psu' | 'ec' | 'vrm' | 'cpu';
 
 /**
  * A stage in a walkthrough dialog: one entry in the list, one highlighted set
@@ -89,7 +95,7 @@ export interface SubstepRef {
 }
 
 /** Where a step's nested stages are explored. */
-export type SubstepAction = 'psu' | 'ec' | 'psu-powerup' | 'vrm';
+export type SubstepAction = 'psu' | 'ec' | 'psu-powerup' | 'vrm' | 'cpu';
 
 /** Definition of a single visual signal path. */
 export interface SignalSpec {

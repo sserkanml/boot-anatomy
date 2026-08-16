@@ -60,6 +60,16 @@ export const UI: Record<string, Localized> = {
   },
   ecStages: { en: 'EC stages', tr: 'EC aşamaları' },
 
+  cpuEyebrow: { en: 'Inside the CPU', tr: 'CPU’nun İçi' },
+  cpuTitle: {
+    en: 'From RESET# to the first instruction',
+    tr: 'RESET#’ten ilk komuta',
+  },
+  cpuLookInside: {
+    en: 'How the CPU wakes up →',
+    tr: 'CPU nasıl uyanıyor →',
+  },
+
   vrmEyebrow: { en: 'Board Power Management', tr: 'Kart Güç Yönetimi' },
   vrmTitle: {
     en: 'From PWR_OK to CPU RESET#',

@@ -3,6 +3,7 @@ import type { AnchorId, BootStep, Phase, SignalSpec } from '../types';
 import { RAIL_COLORS } from './constants';
 import { EC_STAGES } from './ecStages';
 import { PSU_POWERUP_STAGES } from './psuPowerUp';
+import { CPU_SEQUENCE_STEPS } from './cpuSequence';
 import { VRM_SEQUENCE_STEPS } from './vrmSequence';
 import { PSU_STAGES } from './psuStages';
 
@@ -444,6 +445,10 @@ export const BOOT_STEPS: BootStep[] = [
     },
     duration: 6000,
     screen: 'post',
+    // Everything between RESET# going high and the first instruction —
+    // see CPU_SEQUENCE_STEPS.
+    substeps: CPU_SEQUENCE_STEPS,
+    substepAction: 'cpu',
     highlight: ['cpu', 'ram', 'chipset', 'm2', 'pcie'],
     console: [
       'UEFI firmware v2.90 (x64)',

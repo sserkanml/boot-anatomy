@@ -2,6 +2,7 @@ import { t } from '../i18n';
 import { UI } from '../i18n/strings';
 import { EC_SEQUENCE_STEPS } from '../config/ecSequence';
 import { VRM_SEQUENCE_STEPS } from '../config/vrmSequence';
+import { CPU_SEQUENCE_STEPS } from '../config/cpuSequence';
 import { PSU_SEQUENCE_STEPS } from '../config/bootSteps';
 import type { BootSequence } from '../state/BootSequence';
 import type { SceneView, SubstepAction } from '../types';
@@ -42,6 +43,7 @@ export class UILayer {
   private readonly psuPanel: PsuPanel;
   private readonly ecPanel: PsuPanel;
   private readonly vrmPanel: PsuPanel;
+  private readonly cpuPanel: PsuPanel;
   private readonly disposers: Array<() => void> = [];
   /** Whether the board chain should resume once we leave the PSU. */
   private resumeAfterPsu = false;
@@ -52,6 +54,7 @@ export class UILayer {
     private readonly psuSequence: BootSequence,
     private readonly ecSequence: BootSequence,
     private readonly vrmSequence: BootSequence,
+    private readonly cpuSequence: BootSequence,
     private readonly handlers: UIHandlers,
   ) {
     this.infoPanel = new InfoPanel(sequence.steps.length, (step) =>
@@ -93,6 +96,12 @@ export class UILayer {
       // No diagram of its own: every actor here is already visible on the board.
       { onExit: () => this.exitWalkthrough() },
     );
+    this.cpuPanel = new PsuPanel(
+      cpuSequence,
+      { id: 'cpu', eyebrow: UI.cpuEyebrow, title: UI.cpuTitle, steps: CPU_SEQUENCE_STEPS },
+      // Register state and verification output carry this one, not a diagram.
+      { onExit: () => this.exitWalkthrough() },
+    );
 
     this.root.append(
       this.createBrand(),
@@ -105,6 +114,7 @@ export class UILayer {
       this.psuPanel.element,
       this.ecPanel.element,
       this.vrmPanel.element,
+      this.cpuPanel.element,
       this.psuModal.element,
       this.ecModal.element,
       this.psuPowerUpModal.element,
@@ -118,11 +128,16 @@ export class UILayer {
    * Opens a walkthrough view and starts its chain at the given stage. The board
    * chain is paused so the two are never animating at once.
    */
-  enterWalkthrough(view: 'psu' | 'ec' | 'vrm', stageIndex = 0): void {
-    const panel =
-      view === 'ec' ? this.ecPanel : view === 'vrm' ? this.vrmPanel : this.psuPanel;
-    const chain =
-      view === 'ec' ? this.ecSequence : view === 'vrm' ? this.vrmSequence : this.psuSequence;
+  enterWalkthrough(view: 'psu' | 'ec' | 'vrm' | 'cpu', stageIndex = 0): void {
+    const panels = { psu: this.psuPanel, ec: this.ecPanel, vrm: this.vrmPanel, cpu: this.cpuPanel };
+    const chains = {
+      psu: this.psuSequence,
+      ec: this.ecSequence,
+      vrm: this.vrmSequence,
+      cpu: this.cpuSequence,
+    };
+    const panel = panels[view];
+    const chain = chains[view];
 
     if (!panel.isOpen) {
       // Leaving whichever one might already be open keeps the two exclusive.
@@ -137,6 +152,7 @@ export class UILayer {
 
     chain.setPaused(false);
     panel.setPaused(false);
+    this.consolePanel.setLines(chain.currentStep.console);
     // seek() alone would leave stage 0 idle, so start the chain first.
     chain.start();
     chain.seek(stageIndex);
@@ -154,9 +170,12 @@ export class UILayer {
     this.psuSequence.setPaused(true);
     this.ecSequence.setPaused(true);
     this.vrmSequence.setPaused(true);
+    this.cpuSequence.setPaused(true);
     open.hide();
     this.root.classList.remove('is-psu-view');
     this.handlers.onViewChange('board');
+
+    this.consolePanel.setLines(this.sequence.currentStep.console);
 
     if (this.resumeAfterPsu) this.sequence.setPaused(false);
     this.controls.setPaused(this.sequence.isPaused);
@@ -173,6 +192,7 @@ export class UILayer {
   private openSubsteps(action: SubstepAction | undefined, index: number): void {
     if (action === 'ec') this.enterWalkthrough('ec', index);
     else if (action === 'vrm') this.enterWalkthrough('vrm', index);
+    else if (action === 'cpu') this.enterWalkthrough('cpu', index);
     else if (action === 'psu-powerup') this.psuPowerUpModal.openAt(index);
     else this.enterWalkthrough('psu', index);
   }
@@ -190,6 +210,7 @@ export class UILayer {
     if (this.psuPanel.isOpen) return this.psuPanel;
     if (this.ecPanel.isOpen) return this.ecPanel;
     if (this.vrmPanel.isOpen) return this.vrmPanel;
+    if (this.cpuPanel.isOpen) return this.cpuPanel;
     return null;
   }
 
@@ -225,7 +246,33 @@ export class UILayer {
       }),
     );
 
+    // Walkthroughs get the console too — the CPU wake-up in particular is
+    // carried by register values and verification output rather than by prose.
+    for (const chain of this.walkthroughChains) {
+      this.disposers.push(
+        chain.on('step:enter', ({ step }) => {
+          if (this.activeChain === chain) this.consolePanel.setLines(step.console);
+        }),
+        chain.on('progress', ({ stepProgress }) => {
+          if (this.activeChain === chain) this.consolePanel.setProgress(stepProgress);
+        }),
+      );
+    }
+
     this.controls.setState(sequence.state);
+  }
+
+  private get walkthroughChains(): BootSequence[] {
+    return [this.psuSequence, this.ecSequence, this.vrmSequence, this.cpuSequence];
+  }
+
+  /** The chain driving whichever walkthrough is open, if any. */
+  private get activeChain(): BootSequence | null {
+    if (this.psuPanel.isOpen) return this.psuSequence;
+    if (this.ecPanel.isOpen) return this.ecSequence;
+    if (this.vrmPanel.isOpen) return this.vrmSequence;
+    if (this.cpuPanel.isOpen) return this.cpuSequence;
+    return null;
   }
 
   private bindKeyboard(): void {
@@ -242,7 +289,9 @@ export class UILayer {
           ? this.ecSequence
           : this.vrmPanel.isOpen
             ? this.vrmSequence
-            : this.sequence;
+            : this.cpuPanel.isOpen
+              ? this.cpuSequence
+              : this.sequence;
 
       switch (event.key) {
         case 'Escape':

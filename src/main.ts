@@ -9,6 +9,7 @@ import { t } from './i18n';
 import { PSU_SEQUENCE_STEPS } from './config/bootSteps';
 import { EC_SEQUENCE_STEPS } from './config/ecSequence';
 import { VRM_SEQUENCE_STEPS } from './config/vrmSequence';
+import { CPU_SEQUENCE_STEPS } from './config/cpuSequence';
 import { VIEW_CAMERAS, VIEW_FLIGHT_DURATION } from './config/constants';
 import { Picker } from './core/Picker';
 import { SceneManager } from './core/SceneManager';
@@ -51,10 +52,11 @@ function bootstrap(): void {
   const psuSequence = new BootSequence(PSU_SEQUENCE_STEPS, 0);
   const ecSequence = new BootSequence(EC_SEQUENCE_STEPS, 0);
   const vrmSequence = new BootSequence(VRM_SEQUENCE_STEPS, 0);
+  const cpuSequence = new BootSequence(CPU_SEQUENCE_STEPS, 0);
 
   // State machines -> scene. Only one chain runs at a time, so both can drive
   // the same scene without stepping on each other.
-  for (const chain of [sequence, psuSequence, ecSequence, vrmSequence]) {
+  for (const chain of [sequence, psuSequence, ecSequence, vrmSequence, cpuSequence]) {
     chain.on('step:enter', ({ step, index }) => board.applyStep(step, index));
     chain.on('progress', ({ stepProgress }) => board.setStepProgress(stepProgress));
   }
@@ -73,7 +75,7 @@ function bootstrap(): void {
   };
 
   const createUI = (): UILayer =>
-    new UILayer(uiContainer, sequence, psuSequence, ecSequence, vrmSequence, {
+    new UILayer(uiContainer, sequence, psuSequence, ecSequence, vrmSequence, cpuSequence, {
       onViewChange: applyView,
     });
 
@@ -114,6 +116,7 @@ function bootstrap(): void {
     psuSequence.update(dt);
     ecSequence.update(dt);
     vrmSequence.update(dt);
+    cpuSequence.update(dt);
     board.update(dt, elapsed);
     // Picking the PSU again while already inside it would be a no-op at best.
     picker.setEnabled(!ui.isModalOpen && !ui.isPsuViewOpen);

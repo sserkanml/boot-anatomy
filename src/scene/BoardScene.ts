@@ -4,6 +4,7 @@ import {
   EC_VIEW_ANCHORS,
   PSU_VIEW_ANCHORS,
   VRM_VIEW_ANCHORS,
+  CPU_VIEW_ANCHORS,
 } from '../config/anchors';
 import { BOOT_STEPS } from '../config/bootSteps';
 import { SignalOrchestrator } from '../signals/SignalOrchestrator';
@@ -100,7 +101,9 @@ export class BoardScene {
           ? EC_VIEW_ANCHORS
           : view === 'vrm'
             ? VRM_VIEW_ANCHORS
-            : BOARD_VIEW_ANCHORS;
+            : view === 'cpu'
+              ? CPU_VIEW_ANCHORS
+              : BOARD_VIEW_ANCHORS;
     this.labels.setVisibleSet(labelSet);
     this.signals.clear();
   }

@@ -77,6 +77,7 @@ export class InfoPanel {
       const labels: Record<string, Localized> = {
         ec: UI.ecLookInside!,
         'psu-powerup': UI.psuPowerUpLookInside!,
+        cpu: UI.cpuLookInside!,
         vrm: UI.vrmLookInside!,
       };
       this.action.textContent = t(labels[step.substepAction ?? ''] ?? UI.lookInsidePsu!);

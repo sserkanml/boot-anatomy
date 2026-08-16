@@ -663,9 +663,11 @@ body {
 
 /* ---------- PSU view (3D walkthrough inside the unit) ---------- */
 
-/* The board chain's panels step aside while the PSU is open. */
+/* The board chain's panels step aside while the PSU is open. The console is
+   deliberately not in this list: walkthroughs that carry output (the CPU
+   wake-up, for one) need it, and it hides itself when there is nothing to
+   print. */
 .is-psu-view .info-panel,
-.is-psu-view .console-panel,
 .is-psu-view .controls,
 .is-psu-view .timeline,
 .is-psu-view .hint {

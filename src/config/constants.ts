@@ -113,6 +113,10 @@ export const VIEW_CAMERAS = {
     position: [23, 15, 21] as const,
     target: [5.5, 2.4, 0] as const,
   },
+  cpu: {
+    position: [17, 15, 24] as const,
+    target: [-1, 2.4, 3] as const,
+  },
 } as const;
 
 /** Seconds the camera takes to move between views. */
