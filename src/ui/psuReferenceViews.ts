@@ -3,6 +3,7 @@ import {
   PSU_FAQ,
   RAIL_STYLES,
   type Connector,
+  type FaqEntry,
   type RailKey,
 } from '../config/psuReference';
 import { t } from '../i18n';
@@ -90,10 +91,11 @@ export function createPinoutView(): string {
     ${CONNECTORS.map(renderConnector).join('')}`;
 }
 
-/** The FAQ tab: what each piece of jargon in the walkthrough actually means. */
-export function createFaqView(): string {
-  const entries = PSU_FAQ.map(
-    (entry) => `
+/** Renders an accordion of glossary entries. Shared by the PSU and EC dialogs. */
+export function renderFaqList(entries: FaqEntry[], intro: string): string {
+  const items = entries
+    .map(
+      (entry) => `
       <details class="faq-item">
         <summary>
           <span class="faq-term">${escapeHtml(entry.term)}</span>
@@ -102,13 +104,19 @@ export function createFaqView(): string {
         <div class="faq-answer">
           <p>${escapeHtml(t(entry.answer))}</p>
           <a class="faq-link" href="${entry.href}" target="_blank" rel="noopener noreferrer">
-            Wikipedia: ${escapeHtml(entry.term)} ↗
+            Wikipedia: ${escapeHtml(entry.term)} \u2197
           </a>
         </div>
       </details>`,
-  ).join('');
+    )
+    .join('');
 
   return `
-    <p class="tab-intro">${escapeHtml(t(UI.faqIntro))}</p>
-    <div class="faq-list">${entries}</div>`;
+    <p class="tab-intro">${escapeHtml(intro)}</p>
+    <div class="faq-list">${items}</div>`;
+}
+
+/** The PSU glossary tab. */
+export function createFaqView(): string {
+  return renderFaqList(PSU_FAQ, t(UI.faqIntro));
 }

@@ -95,6 +95,7 @@ function bootstrap(): void {
     onHoverChange: (hovered) => board.setPsuHighlighted(hovered),
   });
   board.onPsuActivate = () => ui.enterPsuView(0);
+  board.onEcActivate = () => ui.openEcModal();
   initLanguage();
 
   manager.onRender((dt, elapsed) => {

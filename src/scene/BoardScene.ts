@@ -28,6 +28,9 @@ export class BoardScene {
    */
   onPsuActivate: (() => void) | null = null;
 
+  /** Invoked when the Super I/O / EC label is activated. */
+  onEcActivate: (() => void) | null = null;
+
   private readonly root = new Group();
   private readonly labels: AnchorLabels;
   private readonly psu: PsuObject;
@@ -56,7 +59,10 @@ export class BoardScene {
 
     this.signals = new SignalOrchestrator(this.root, this.anchors);
     this.labels = new AnchorLabels(this.anchors, this.root, {
-      actions: { psu: () => this.onPsuActivate?.() },
+      actions: {
+        psu: () => this.onPsuActivate?.(),
+        superio: () => this.onEcActivate?.(),
+      },
     });
     this.labels.setVisibleSet(BOARD_VIEW_ANCHORS);
   }

@@ -18,9 +18,12 @@ export class InfoPanel {
   private readonly progressBar: HTMLElement;
   private readonly action: HTMLButtonElement;
 
+  /** The step currently shown, so the action button knows what it opens. */
+  private currentStep: BootStep | null = null;
+
   constructor(
     private readonly totalSteps: number,
-    onAction?: () => void,
+    onAction?: (step: BootStep) => void,
   ) {
     this.element = document.createElement('section');
     this.element.className = 'panel info-panel';
@@ -37,7 +40,11 @@ export class InfoPanel {
     `;
 
     this.action = this.query('.info-action');
-    if (onAction) this.action.addEventListener('click', onAction);
+    if (onAction) {
+      this.action.addEventListener('click', () => {
+        if (this.currentStep) onAction(this.currentStep);
+      });
+    }
 
     this.phaseChip = this.query('.phase-chip');
     this.counter = this.query('.step-counter');
@@ -48,6 +55,7 @@ export class InfoPanel {
   }
 
   setStep(step: BootStep, index: number): void {
+    this.currentStep = step;
     this.element.dataset.phase = step.phase;
     this.phaseChip.textContent = t(PHASE_LABELS[step.phase]);
     this.counter.textContent = `${index + 1} / ${this.totalSteps}`;
@@ -61,10 +69,14 @@ export class InfoPanel {
       this.signal.hidden = true;
     }
 
-    // Steps with nested stages offer a way into them.
+    // Steps with nested stages offer a way into them, labelled for wherever
+    // that actually leads.
     const hasSubsteps = (step.substeps?.length ?? 0) > 0;
     this.action.hidden = !hasSubsteps;
-    if (hasSubsteps) this.action.textContent = t(UI.lookInsidePsu);
+    if (hasSubsteps) {
+      this.action.textContent =
+        step.substepAction === 'ec' ? t(UI.ecLookInside) : t(UI.lookInsidePsu);
+    }
 
     // Trigger a short enter animation whenever the step changes.
     this.element.classList.remove('is-entering');

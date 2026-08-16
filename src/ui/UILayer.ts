@@ -1,13 +1,15 @@
 import { t } from '../i18n';
 import { UI } from '../i18n/strings';
 import type { BootSequence } from '../state/BootSequence';
-import type { SceneView } from '../types';
+import type { SceneView, SubstepAction } from '../types';
 import { ConsolePanel } from './ConsolePanel';
 import { Controls } from './Controls';
 import { InfoPanel } from './InfoPanel';
 import { LanguageSwitch } from './LanguageSwitch';
-import { PsuModal } from './PsuModal';
+import { createEcModal } from './EcModal';
+import { createPsuModal } from './PsuModal';
 import { PsuPanel } from './PsuPanel';
+import type { ReferenceModal } from './ReferenceModal';
 import { Timeline } from './Timeline';
 
 export interface UIHandlers {
@@ -30,7 +32,8 @@ export class UILayer {
   private readonly timeline: Timeline;
   private readonly consolePanel: ConsolePanel;
   private readonly controls: Controls;
-  private readonly psuModal: PsuModal;
+  private readonly psuModal: ReferenceModal;
+  private readonly ecModal: ReferenceModal;
   private readonly psuPanel: PsuPanel;
   private readonly disposers: Array<() => void> = [];
   /** Whether the board chain should resume once we leave the PSU. */
@@ -42,14 +45,17 @@ export class UILayer {
     private readonly psuSequence: BootSequence,
     private readonly handlers: UIHandlers,
   ) {
-    this.infoPanel = new InfoPanel(sequence.steps.length, () => this.enterPsuView(0));
+    this.infoPanel = new InfoPanel(sequence.steps.length, (step) =>
+      this.openSubsteps(step.substepAction, 0),
+    );
     this.consolePanel = new ConsolePanel();
     this.timeline = new Timeline(sequence.steps, {
       onSelect: (index) => {
         this.exitPsuView();
         sequence.seek(index);
       },
-      onSelectSubstep: (_parentIndex, substepIndex) => this.enterPsuView(substepIndex),
+      onSelectSubstep: (parentIndex, substepIndex) =>
+        this.openSubsteps(sequence.steps[parentIndex]?.substepAction, substepIndex),
     });
     this.controls = new Controls({
       onPower: () => sequence.start(),
@@ -59,7 +65,8 @@ export class UILayer {
       onReset: () => sequence.reset(),
     });
 
-    this.psuModal = new PsuModal();
+    this.psuModal = createPsuModal();
+    this.ecModal = createEcModal();
     this.psuPanel = new PsuPanel(psuSequence, {
       onExit: () => this.exitPsuView(),
       onSchematic: () => this.psuModal.openAt(0),
@@ -75,6 +82,7 @@ export class UILayer {
       this.createHint(),
       this.psuPanel.element,
       this.psuModal.element,
+      this.ecModal.element,
     );
 
     this.bindSequence();
@@ -118,8 +126,22 @@ export class UILayer {
     return this.psuPanel.isOpen;
   }
 
+  /**
+   * Opens whichever walkthrough a step's nested stages belong to. The PSU is
+   * explored in the scene itself; the EC, being a single chip, in a dialog.
+   */
+  private openSubsteps(action: SubstepAction | undefined, index: number): void {
+    if (action === 'ec') this.ecModal.openAt(index);
+    else this.enterPsuView(index);
+  }
+
+  /** Opens the EC walkthrough; wired to the Super I/O / EC label. */
+  openEcModal(): void {
+    this.ecModal.openAt(0);
+  }
+
   get isModalOpen(): boolean {
-    return this.psuModal.isOpen;
+    return this.psuModal.isOpen || this.ecModal.isOpen;
   }
 
   dispose(): void {
@@ -162,7 +184,7 @@ export class UILayer {
       // Disable the shortcuts while a form element has focus.
       if (event.target instanceof HTMLInputElement) return;
       // The block-diagram dialog owns the keyboard while it is open.
-      if (this.psuModal.isOpen) return;
+      if (this.psuModal.isOpen || this.ecModal.isOpen) return;
 
       // Inside the PSU the same keys drive the PSU chain instead.
       const active = this.psuPanel.isOpen ? this.psuSequence : this.sequence;

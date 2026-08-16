@@ -1,6 +1,6 @@
 import { t } from '../i18n';
 import { UI } from '../i18n/strings';
-import type { BootStep } from '../types';
+import type { BootStep, SubstepRef } from '../types';
 
 export interface TimelineHandlers {
   /** A top-level step was picked. */
@@ -69,7 +69,7 @@ export class Timeline {
   }
 
   private createSubstepList(
-    substeps: readonly BootStep[],
+    substeps: readonly SubstepRef[],
     parentIndex: number,
     handlers: TimelineHandlers,
   ): HTMLElement {

@@ -1243,6 +1243,53 @@ body {
   color: var(--text);
 }
 
+/* ---------- EC components tab ---------- */
+
+.ec-components {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.ec-component {
+  padding: 14px 16px;
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.ec-component-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.ec-component-head h4 {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--phase-os);
+}
+
+.ec-component-head span {
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+.ec-component p {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+/* The EC diagram is a hub rather than a chain, so it needs less width. */
+.ec-diagram {
+  min-width: 780px;
+}
+
 /* ---------- FAQ tab ---------- */
 
 .faq-list {

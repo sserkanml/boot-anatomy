@@ -1,6 +1,7 @@
 import type { Localized } from '../i18n';
 import type { AnchorId, BootStep, Phase, SignalSpec } from '../types';
 import { RAIL_COLORS } from './constants';
+import { EC_STAGES } from './ecStages';
 import { PSU_STAGES } from './psuStages';
 
 /** Phase names shown on the info panel badge. */
@@ -243,6 +244,7 @@ export const BOOT_STEPS: BootStep[] = [
     // Shown nested in the timeline. These play inside the PSU view rather than
     // in the main chain — see PSU_SEQUENCE_STEPS.
     substeps: PSU_SEQUENCE_STEPS,
+    substepAction: 'psu',
     highlight: ['psu', 'atx24', 'superio'],
     signals: [
       {
@@ -290,6 +292,10 @@ export const BOOT_STEPS: BootStep[] = [
     },
     duration: 4200,
     screen: 'off',
+    // This single beat is eight steps inside the EC. They open in the EC
+    // dialog rather than playing here — see EC_STAGES.
+    substeps: EC_STAGES,
+    substepAction: 'ec',
     highlight: ['superio', 'atx24', 'psu'],
     console: ['[EC] S5 -> S0 transition requested', '[EC] PS_ON# -> LOW'],
     signals: [

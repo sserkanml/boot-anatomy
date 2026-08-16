@@ -38,6 +38,22 @@ export const UI: Record<string, Localized> = {
   modalEyebrow: { en: 'Power Supply Unit', tr: 'Power Supply Unit' },
   tabDiagram: { en: 'Block diagram', tr: 'Blok şeması' },
   tabWaveforms: { en: 'Waveforms', tr: 'Dalga Şekilleri' },
+  tabComponents: { en: 'Components', tr: 'Bileşenler' },
+
+  ecEyebrow: { en: 'Embedded Controller', tr: 'Embedded Controller' },
+  ecTitle: {
+    en: 'From the button press to PS_ON#',
+    tr: 'Düğmeye basıştan PS_ON#’a',
+  },
+  ecComponentsIntro: {
+    en: 'The hardware blocks an EC is built from. Nearly all of them exist to do something while the rest of the machine is off — which is the one requirement that shapes every choice here.',
+    tr: 'Bir EC’nin kurulu olduğu donanım blokları. Neredeyse hepsi, makinenin geri kalanı kapalıyken bir iş yapmak için vardır — buradaki her tercihi şekillendiren tek gereklilik budur.',
+  },
+  ecFaqIntro: {
+    en: 'The terms behind the eight steps. The EC is the least discussed chip on the board and the one most likely to be the reason a machine will not turn on.',
+    tr: 'Sekiz adımın arkasındaki terimler. EC, kart üzerinde en az konuşulan ve bir makinenin açılmamasının sebebi olma ihtimali en yüksek olan yongadır.',
+  },
+  ecLookInside: { en: 'Inside the EC →', tr: 'EC’nin içine bak →' },
   tabPinout: { en: 'Pinout', tr: 'Pinout' },
   tabFaq: { en: 'FAQ', tr: 'SSS' },
   close: { en: 'Close', tr: 'Kapat' },

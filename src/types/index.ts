@@ -41,6 +41,36 @@ export type Phase = 'psu' | 'standby' | 'power' | 'firmware' | 'os';
 /** Which part of the scene a step is staged in. */
 export type SceneView = 'board' | 'psu';
 
+/**
+ * A stage in a walkthrough dialog: one entry in the list, one highlighted set
+ * of blocks in the diagram, one card of prose.
+ */
+export interface ModalStage {
+  id: string;
+  title: Localized;
+  badge: Localized | string;
+  description: Localized;
+  /** Optional callout tying the stage back to the wider boot chain. */
+  note?: Localized;
+  /** SVG `data-node` ids lit while this stage is active. */
+  nodes: string[];
+  /** SVG `data-edge` ids animated while this stage is active. */
+  edges?: string[];
+}
+
+/**
+ * The minimum a nested stage has to expose to be listed under its parent in the
+ * timeline. Both full BootSteps and ModalStages satisfy it, which is what lets
+ * the PSU chain and the EC walkthrough hang off the same mechanism.
+ */
+export interface SubstepRef {
+  id: string;
+  title: Localized;
+}
+
+/** Where a step's nested stages are explored. */
+export type SubstepAction = 'psu' | 'ec';
+
 /** Definition of a single visual signal path. */
 export interface SignalSpec {
   /** Anchors to traverse in order. Must contain at least two entries. */
@@ -96,11 +126,13 @@ export interface BootStep {
    */
   view?: SceneView;
   /**
-   * Nested steps shown under this one in the timeline. They are not part of the
-   * main chain's playback: selecting one enters that step's `view` and plays it
-   * there, which is how the PSU internals stay a detour rather than a delay.
+   * Nested stages shown under this one in the timeline. They are not part of
+   * the main chain's playback: selecting one opens wherever `substepAction`
+   * points, which is how these detours stay detours rather than delays.
    */
-  substeps?: BootStep[];
+  substeps?: SubstepRef[];
+  /** Which walkthrough a nested stage opens in. */
+  substepAction?: SubstepAction;
   /** Shows a button that opens the block-diagram dialog for this step. */
   schematic?: boolean;
 }
