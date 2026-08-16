@@ -1360,6 +1360,25 @@ body {
   text-anchor: start;
 }
 
+.psu-earth-path {
+  fill: none;
+  stroke: rgba(147, 164, 187, 0.35);
+  stroke-width: 1.6;
+}
+
+.psu-earth-bar {
+  stroke: rgba(147, 164, 187, 0.45);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.psu-earth-label {
+  fill: var(--text-faint);
+  font-family: var(--mono);
+  font-size: 10px;
+  text-anchor: middle;
+}
+
 .psu-opto-box {
   fill: rgba(24, 33, 47, 0.95);
   stroke: rgba(122, 162, 212, 0.35);

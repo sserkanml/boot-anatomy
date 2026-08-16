@@ -45,7 +45,7 @@ function renderConnector(connector: Connector): string {
         return `
           <li class="pin${noted}"${title} style="--pin-color: ${style.swatch}">
             <span class="pin-number">${pin.number}</span>
-            <span class="pin-rail">${escapeHtml(style.label)}</span>
+            <span class="pin-rail">${escapeHtml(pin.label ?? style.label)}</span>
           </li>`;
       })
       .join('');
@@ -57,7 +57,7 @@ function renderConnector(connector: Connector): string {
     .filter((pin) => pin.note)
     .map(
       (pin) =>
-        `<li><b>Pin ${pin.number} · ${escapeHtml(RAIL_STYLES[pin.rail].label)}</b> — ${escapeHtml(pin.note ? t(pin.note) : '')}</li>`,
+        `<li><b>Pin ${pin.number} · ${escapeHtml(pin.label ?? RAIL_STYLES[pin.rail].label)}</b> — ${escapeHtml(pin.note ? t(pin.note) : '')}</li>`,
     )
     .join('');
 

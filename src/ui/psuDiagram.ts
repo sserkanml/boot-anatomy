@@ -198,6 +198,15 @@ export function createPsuDiagram(): string {
   ${EDGES.map(renderEdge).join('')}
   ${NODES.map(renderNode).join('')}
 
+  <!-- Protective earth: bonded to the housing, carrying no current until a fault. -->
+  <g class="psu-earth" data-node="earth">
+    <path class="psu-earth-path" d="M90,220 V292" />
+    <line class="psu-earth-bar" x1="70" y1="292" x2="110" y2="292" />
+    <line class="psu-earth-bar" x1="78" y1="300" x2="102" y2="300" />
+    <line class="psu-earth-bar" x1="86" y1="308" x2="94" y2="308" />
+    <text class="psu-earth-label" x="90" y="330">PE · chassis</text>
+  </g>
+
   <g class="psu-opto" data-node="opto">
     <rect class="psu-opto-box" x="${BARRIER_X - 30}" y="242" width="60" height="32" rx="8" />
     <text class="psu-opto-label" x="${BARRIER_X}" y="263">OPTO</text>

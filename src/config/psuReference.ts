@@ -298,6 +298,102 @@ export const PSU_FAQ: FaqEntry[] = [
     },
     href: 'https://en.wikipedia.org/wiki/80_Plus',
   },
+  {
+    term: 'Hold-up time',
+    question: {
+      en: 'Why does a brief power flicker not reboot the machine?',
+      tr: 'Kısa bir elektrik dalgalanması makineyi neden yeniden başlatmıyor?',
+    },
+    answer: {
+      en: 'The bulk capacitors keep the rails alive for a moment after mains disappears. The ATX specification requires at least 17 ms of hold-up at full load — slightly longer than one cycle of 50 Hz mains, so a dropped cycle passes unnoticed. It is also what gives a UPS time to switch over. Hold-up is one of the first things cheap units sacrifice, because it is measured in capacitance and capacitance costs money.',
+      tr: 'Şebeke kesildikten sonra bulk kondansatörler rail’leri bir süre daha ayakta tutar. ATX spesifikasyonu tam yükte en az 17 ms hold-up ister — 50 Hz şebekenin bir çevriminden biraz uzun, yani kaçan bir çevrim fark edilmeden geçer. Bir UPS’in devreye girmesine zaman tanıyan da budur. Hold-up, ucuz cihazların ilk feda ettiği şeylerdendir; çünkü kapasitansla ölçülür ve kapasitans para demektir.',
+    },
+    href: 'https://en.wikipedia.org/wiki/Power_supply_unit_(computer)',
+  },
+  {
+    term: 'Y-capacitor',
+    question: {
+      en: 'If the barrier isolates everything, why does the case tingle?',
+      tr: 'Bariyer her şeyi yalıtıyorsa kasa neden karıncalanıyor?',
+    },
+    answer: {
+      en: 'Because the isolation is not quite absolute on purpose. A pair of small Y-capacitors deliberately bridges the barrier to give switching noise a short path home instead of letting it radiate. They pass a tiny mains-frequency leakage current — legally capped, typically well under a milliamp — into the chassis. With the earth pin connected that current goes straight to ground and you feel nothing. On an ungrounded outlet it has nowhere to go, so the chassis floats at around half mains voltage and your fingertips find it. The tingle is a wiring fault, not a broken supply.',
+      tr: 'Çünkü izolasyon bilerek tam mutlak değildir. Bir çift küçük Y-kondansatör, switching gürültüsüne yayılmak yerine eve dönecek kısa bir yol vermek için bariyeri kasten köprüler. Bunlar şebeke frekansında çok küçük bir kaçak akımı — yasal olarak sınırlı, tipik olarak bir miliamperin epey altında — kasaya geçirir. Toprak pini bağlıysa bu akım doğrudan toprağa gider ve hiçbir şey hissetmezsin. Topraksız bir prizde ise gidecek yeri olmaz, kasa şebeke geriliminin yaklaşık yarısında salınır ve parmak uçların bunu bulur. O karıncalanma bir tesisat arızasıdır, bozuk bir besleme değil.',
+    },
+    href: 'https://en.wikipedia.org/wiki/Ground_(electricity)',
+  },
+  {
+    term: 'Protective earth (PE)',
+    question: {
+      en: 'What does the third mains wire actually do here?',
+      tr: 'Üçüncü şebeke kablosu burada aslında ne yapıyor?',
+    },
+    answer: {
+      en: 'It bonds the PSU housing — and through the mounting screws, the case and the motherboard tray — to earth. It carries no current in normal operation. Its two jobs are to drain the Y-capacitor leakage described above, and to give a fault current somewhere to go: if mains ever touched the chassis, the earth path would carry enough current to blow the fuse instead of leaving the case live. It is also the reference that makes shielding and EMI filtering work at all.',
+      tr: 'PSU gövdesini — ve montaj vidaları üzerinden kasayı ve anakart tepsisini — toprağa bağlar. Normal çalışmada üzerinden akım geçmez. İki görevi vardır: yukarıda anlatılan Y-kondansatör kaçağını boşaltmak ve bir arıza akımına gidecek yer vermek. Şebeke bir şekilde kasaya değerse, toprak yolu sigortayı attıracak kadar akım taşır ve kasa gerilim altında kalmaz. Ayrıca ekranlamanın ve EMI filtrelemesinin çalışmasını sağlayan referans da odur.',
+    },
+    href: 'https://en.wikipedia.org/wiki/Ground_(electricity)',
+  },
+  {
+    term: 'Fan control',
+    question: {
+      en: 'Why does the fan sometimes not spin at all?',
+      tr: 'Fan neden bazen hiç dönmüyor?',
+    },
+    answer: {
+      en: 'Most modern units run a hybrid or zero-RPM mode: below roughly 30–40% load the losses are small enough to shed passively, so the controller keeps the fan stopped and the unit is silent. Above that it follows a curve driven by internal temperature, not by load directly. The fan is also the only moving part in the box, which is why it is usually what fails first — and why a supply that has started whining is telling you something before the electronics do.',
+      tr: 'Çoğu modern cihaz hybrid ya da zero-RPM modunda çalışır: kabaca %30–40 yükün altında kayıplar pasif olarak atılabilecek kadar küçüktür, bu yüzden kontrolcü fanı durdurur ve cihaz sessizdir. Bunun üstünde ise doğrudan yüke değil iç sıcaklığa bağlı bir eğriyi takip eder. Fan aynı zamanda kutudaki tek hareketli parçadır; genelde ilk bozulan şeyin o olmasının sebebi budur — ve inlemeye başlamış bir besleme, elektronik aksam bir şey söylemeden önce sana bir şey söylüyordur.',
+    },
+    href: 'https://en.wikipedia.org/wiki/Computer_fan',
+  },
+  {
+    term: 'Single-rail vs multi-rail',
+    question: {
+      en: 'Is one big +12V rail better than several?',
+      tr: 'Tek büyük bir +12V rail mi yoksa birkaç tane mi daha iyi?',
+    },
+    answer: {
+      en: 'They are the same silicon producing the same +12V; the difference is only how OCP is applied. Multi-rail splits the output into groups with a separate current limit each, so a fault on one connector trips sooner and less energy reaches it. Single-rail applies one high limit to everything, which never blocks a legitimate load but reacts later to a fault. Multi-rail is arguably safer, single-rail is simpler to cable without accidentally overloading a group. Neither is a quality marker.',
+      tr: 'İkisi de aynı +12V’u üreten aynı silikondur; fark yalnızca OCP’nin nasıl uygulandığındadır. Multi-rail çıkışı her birinin ayrı akım limiti olan gruplara böler; böylece bir konektördeki arıza daha erken tetiklenir ve oraya daha az enerji ulaşır. Single-rail ise her şeye tek bir yüksek limit uygular; meşru bir yükü asla engellemez ama arızaya daha geç tepki verir. Multi-rail tartışmalı biçimde daha güvenli, single-rail ise bir grubu yanlışlıkla aşırı yüklemeden kablolaması daha kolaydır. İkisi de kalite göstergesi değildir.',
+    },
+    href: 'https://en.wikipedia.org/wiki/Power_supply_unit_(computer)',
+  },
+  {
+    term: 'Active PFC + UPS',
+    question: {
+      en: 'Why can a PSU refuse to run on a cheap UPS?',
+      tr: 'Bir PSU ucuz bir UPS’te neden çalışmayı reddedebilir?',
+    },
+    answer: {
+      en: 'Line-interactive UPS units often output a stepped or "simulated sine" waveform on battery. An active PFC stage is a feedback loop expecting a smooth sinusoid; those abrupt steps can make it oscillate, draw enormous current spikes, or trip its own protection — the system shuts down at exactly the moment the UPS was supposed to save it. Pairing an active PFC supply with a pure sine wave UPS avoids the whole class of problem.',
+      tr: 'Line-interactive UPS’ler batarya modunda çoğu zaman basamaklı, yani “simüle sinüs” bir dalga üretir. Active PFC katmanı ise düzgün bir sinüs bekleyen bir geri besleme döngüsüdür; bu ani basamaklar onu salınıma sokabilir, devasa akım darbeleri çektirebilir ya da kendi korumasını tetikleyebilir — sistem tam da UPS’in onu kurtarması gereken anda kapanır. Active PFC’li bir beslemeyi tam sinüs (pure sine wave) bir UPS ile eşlemek bu sorun sınıfının tamamını ortadan kaldırır.',
+    },
+    href: 'https://en.wikipedia.org/wiki/Uninterruptible_power_supply',
+  },
+  {
+    term: 'Capacitor aging',
+    question: {
+      en: 'Why do power supplies get worse with age?',
+      tr: 'Beslemeler yaşlandıkça neden kötüleşir?',
+    },
+    answer: {
+      en: 'Electrolytic capacitors dry out. Their electrolyte slowly escapes through the seal, capacitance falls and internal resistance rises, so filtering degrades and ripple climbs. The rate roughly doubles for every 10 °C, which is why the capacitors nearest the hot components go first. The symptoms are maddening precisely because they are gradual: random reboots, instability under load, a machine that misbehaves only when warm.',
+      tr: 'Elektrolitik kondansatörler kurur. Elektrolitleri yalıtım contasından yavaşça kaçar, kapasitans düşer ve iç direnç yükselir; böylece filtreleme bozulur ve ripple tırmanır. Bu hız her 10 °C için kabaca ikiye katlanır; sıcak bileşenlere en yakın kondansatörlerin önce gitmesinin sebebi budur. Belirtiler tam da kademeli oldukları için çıldırtıcıdır: rastgele yeniden başlatmalar, yük altında kararsızlık, yalnızca ısındığında huysuzlaşan bir makine.',
+    },
+    href: 'https://en.wikipedia.org/wiki/Capacitor_plague',
+  },
+  {
+    term: '12VHPWR / 12V-2x6',
+    question: {
+      en: 'What changed with the ATX 3.x graphics connector?',
+      tr: 'ATX 3.x ekran kartı konektörüyle ne değişti?',
+    },
+    answer: {
+      en: 'One connector now carries up to 600 W, where a PCIe 8-pin manages 150 W. Four sideband pins go with it: SENSE0 and SENSE1 encode how much the supply is actually willing to give (150/300/450/600 W), so the card limits itself rather than assuming. ATX 3.x also demands the supply survive transient excursions far above its rating — modern GPUs spike to twice their nominal draw for microseconds, and units that merely met the old average-power spec were tripping OCP on them. The 12V-2x6 revision shortens those sideband pins so a partly seated plug fails safe instead of arcing.',
+      tr: 'PCIe 8-pin 150 W taşırken artık tek konektör 600 W’a kadar taşıyor. Yanında dört sideband pini geliyor: SENSE0 ve SENSE1, beslemenin gerçekte ne kadarını vermeye razı olduğunu kodluyor (150/300/450/600 W); böylece kart varsayımda bulunmak yerine kendini sınırlıyor. ATX 3.x ayrıca beslemenin nominal değerinin çok üstündeki anlık sıçramalara dayanmasını şart koşuyor — modern GPU’lar mikrosaniyeler boyunca nominal çekişlerinin iki katına çıkıyor ve yalnızca eski ortalama güç şartını karşılayan cihazlar bunlarda OCP’ye takılıyordu. 12V-2x6 revizyonu ise bu sideband pinlerini kısaltıyor; böylece tam oturmamış bir fiş ark yapmak yerine güvenli tarafta arızalanıyor.',
+    },
+    href: 'https://en.wikipedia.org/wiki/PCI_Express',
+  },
 ];
 
 // --- Connector pinouts ---
@@ -339,6 +435,11 @@ export const RAIL_STYLES: Record<RailKey, RailStyle> = {
 export interface Pin {
   number: number;
   rail: RailKey;
+  /**
+   * Overrides the rail label on the cell. Used by sideband pins that share a
+   * rail style but carry distinct signal names.
+   */
+  label?: string;
   /** Set for the pins the boot walkthrough actually talks about. */
   note?: Localized;
 }
@@ -448,6 +549,57 @@ export const CONNECTORS: Connector[] = [
       { number: 6, rail: 'COM' },
       { number: 7, rail: 'COM' },
       { number: 8, rail: 'COM' },
+    ],
+  },
+  {
+    id: '12vhpwr',
+    name: '12VHPWR / 12V-2x6',
+    subtitle: {
+      en: 'ATX 3.x graphics power — up to 600 W',
+      tr: 'ATX 3.x ekran kartı beslemesi — 600 W’a kadar',
+    },
+    columns: 6,
+    pins: [
+      { number: 1, rail: '+12V' },
+      { number: 2, rail: '+12V' },
+      { number: 3, rail: '+12V' },
+      { number: 4, rail: '+12V' },
+      { number: 5, rail: '+12V' },
+      { number: 6, rail: '+12V' },
+      { number: 7, rail: 'COM' },
+      { number: 8, rail: 'COM' },
+      { number: 9, rail: 'COM' },
+      { number: 10, rail: 'COM' },
+      { number: 11, rail: 'COM' },
+      { number: 12, rail: 'COM' },
+      {
+        number: 13,
+        rail: 'SENSE',
+        label: 'SENSE0',
+        note: {
+          en: 'With SENSE1, encodes the power budget the supply permits: 150 / 300 / 450 / 600 W',
+          tr: 'SENSE1 ile birlikte beslemenin izin verdiği güç bütçesini kodlar: 150 / 300 / 450 / 600 W',
+        },
+      },
+      { number: 14, rail: 'SENSE', label: 'SENSE1' },
+      {
+        number: 15,
+        rail: 'SENSE',
+        label: 'PWR_STABLE',
+        note: {
+          en: 'Supply tells the card its rails are up and steady',
+          tr: 'Besleme, karta rail’lerinin ayakta ve kararlı olduğunu bildirir',
+        },
+      },
+      {
+        number: 16,
+        rail: 'SENSE',
+        label: 'CABLE_PRESENT',
+        note: {
+          en: 'Shortened on 12V-2x6, so a partly seated plug fails safe instead of arcing',
+          tr: '12V-2x6’da kısaltıldı; tam oturmamış fiş ark yapmak yerine güvenli tarafta arızalanır',
+        },
+      },
     ],
   },
   {

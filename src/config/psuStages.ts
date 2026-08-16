@@ -77,8 +77,8 @@ export const PSU_STAGES: PsuStage[] = [
     title: { en: 'Transformer & Galvanic Isolation', tr: 'Transformatör ve Galvanik İzolasyon' },
     badge: { en: 'isolation barrier', tr: 'izolasyon bariyeri' },
     description: {
-      en: 'The high-frequency waveform crosses a ferrite transformer that does two jobs at once. It steps the voltage down toward the levels that will become 12 V, 5 V and 3.3 V — and it galvanically isolates the output side from the mains side. There is no electrical path across it, only magnetic coupling. Without that, every metal surface in the case would be sitting at mains potential.',
-      tr: 'Yüksek frekanslı dalga, aynı anda iki iş yapan bir ferrit transformatörden geçer. Gerilimi 12 V, 5 V ve 3.3 V olacak seviyelere düşürür — ve çıkış tarafını şebeke tarafından galvanik olarak yalıtır. Üzerinden geçen hiçbir elektriksel yol yoktur, yalnızca manyetik kuplaj vardır. Bu olmasa kasadaki her metal yüzey şebeke potansiyelinde olurdu.',
+      en: 'The high-frequency waveform crosses a ferrite transformer that does two jobs at once. It steps the voltage down toward the levels that will become 12 V, 5 V and 3.3 V — and it galvanically isolates the output side from the mains side. Energy crosses as magnetic field, not as current: the only conductive link is a pair of deliberately tiny Y-capacitors placed there to give switching noise a path home. Without that isolation, every metal surface in the case would be sitting at mains potential.',
+      tr: 'Yüksek frekanslı dalga, aynı anda iki iş yapan bir ferrit transformatörden geçer. Gerilimi 12 V, 5 V ve 3.3 V olacak seviyelere düşürür — ve çıkış tarafını şebeke tarafından galvanik olarak yalıtır. Enerji akım olarak değil manyetik alan olarak karşıya geçer: tek iletken bağlantı, switching gürültüsüne eve dönecek bir yol vermek için oraya kasten konmuş bir çift minik Y-kondansatördür. Bu izolasyon olmasa kasadaki her metal yüzey şebeke potansiyelinde olurdu.',
     },
     nodes: ['transformer', 'barrier'],
     edges: ['e-sw-tr'],
