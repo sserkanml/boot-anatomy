@@ -129,6 +129,9 @@ export class ReferenceModal {
     this.footer = this.query('.psu-modal-foot');
     this.svg = this.query<HTMLElement>('svg') as unknown as SVGElement;
 
+    // A dialog with only the diagram has nothing to switch between.
+    this.query('.psu-tabs').hidden = tabs.length < 2;
+
     this.buildStageList();
     this.bindEvents();
     this.setStage(0);

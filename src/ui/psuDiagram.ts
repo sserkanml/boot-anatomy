@@ -103,13 +103,23 @@ const NODES: DiagramNode[] = [
     title: 'Standby Flyback',
     caption: 'always on',
   },
+  // Watches PS_ON# on standby power and enables the two controllers.
+  {
+    id: 'pson',
+    x: 140,
+    y: 292,
+    w: 180,
+    h: 68,
+    title: 'PS_ON# comparator',
+    caption: 'standby-powered',
+  },
 ];
 
 interface DiagramEdge {
   id: string;
   d: string;
   /** Extra class controlling color and dash pattern. */
-  variant?: 'standby' | 'feedback' | 'monitor' | 'pwrok';
+  variant?: 'standby' | 'feedback' | 'monitor' | 'pwrok' | 'enable';
   label?: { text: string; x: number; y: number };
 }
 
@@ -139,6 +149,19 @@ const EDGES: DiagramEdge[] = [
     variant: 'feedback',
     label: { text: 'feedback', x: 1080, y: 248 },
   },
+
+  // PS_ON# arriving from the EC, and the enable lines it releases. Until these
+  // go active the PFC and PWM controllers are simply not running.
+  // Routed along the bottom rather than straight in from the left, which is
+  // where the protective earth symbol already sits.
+  {
+    id: 'e-pson-in',
+    d: 'M16,392 H210 V360',
+    variant: 'enable',
+    label: { text: 'PS_ON# from the EC', x: 105, y: 382 },
+  },
+  { id: 'e-pson-pfc', d: 'M320,340 H606 V226', variant: 'enable' },
+  { id: 'e-pson-sw', d: 'M320,352 H730 V226', variant: 'enable' },
 
   // Supervisor watches the rails and emits PWR_OK.
   { id: 'e-sup-mon1', d: 'M1122,140 V90', variant: 'monitor' },

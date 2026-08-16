@@ -69,7 +69,7 @@ export interface SubstepRef {
 }
 
 /** Where a step's nested stages are explored. */
-export type SubstepAction = 'psu' | 'ec';
+export type SubstepAction = 'psu' | 'ec' | 'psu-powerup';
 
 /** Definition of a single visual signal path. */
 export interface SignalSpec {

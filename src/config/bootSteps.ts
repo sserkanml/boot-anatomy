@@ -2,6 +2,7 @@ import type { Localized } from '../i18n';
 import type { AnchorId, BootStep, Phase, SignalSpec } from '../types';
 import { RAIL_COLORS } from './constants';
 import { EC_STAGES } from './ecStages';
+import { PSU_POWERUP_STAGES } from './psuPowerUp';
 import { PSU_STAGES } from './psuStages';
 
 /** Phase names shown on the info panel badge. */
@@ -318,6 +319,10 @@ export const BOOT_STEPS: BootStep[] = [
     },
     duration: 5600,
     screen: 'off',
+    // Everything between PS_ON# arriving and PWR_OK leaving happens inside the
+    // supply during this one beat — see PSU_POWERUP_STAGES.
+    substeps: PSU_POWERUP_STAGES,
+    substepAction: 'psu-powerup',
     highlight: ['psu', 'atx24', 'eps12v', 'vrm', 'cpu', 'ram', 'm2', 'chipset'],
     console: [
       '[PSU] main converter ON',

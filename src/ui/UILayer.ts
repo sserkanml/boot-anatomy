@@ -8,6 +8,7 @@ import { InfoPanel } from './InfoPanel';
 import { LanguageSwitch } from './LanguageSwitch';
 import { createEcModal } from './EcModal';
 import { createPsuModal } from './PsuModal';
+import { createPsuPowerUpModal } from './PsuPowerUpModal';
 import { PsuPanel } from './PsuPanel';
 import type { ReferenceModal } from './ReferenceModal';
 import { Timeline } from './Timeline';
@@ -34,6 +35,7 @@ export class UILayer {
   private readonly controls: Controls;
   private readonly psuModal: ReferenceModal;
   private readonly ecModal: ReferenceModal;
+  private readonly psuPowerUpModal: ReferenceModal;
   private readonly psuPanel: PsuPanel;
   private readonly disposers: Array<() => void> = [];
   /** Whether the board chain should resume once we leave the PSU. */
@@ -67,6 +69,7 @@ export class UILayer {
 
     this.psuModal = createPsuModal();
     this.ecModal = createEcModal();
+    this.psuPowerUpModal = createPsuPowerUpModal();
     this.psuPanel = new PsuPanel(psuSequence, {
       onExit: () => this.exitPsuView(),
       onSchematic: () => this.psuModal.openAt(0),
@@ -83,6 +86,7 @@ export class UILayer {
       this.psuPanel.element,
       this.psuModal.element,
       this.ecModal.element,
+      this.psuPowerUpModal.element,
     );
 
     this.bindSequence();
@@ -132,6 +136,7 @@ export class UILayer {
    */
   private openSubsteps(action: SubstepAction | undefined, index: number): void {
     if (action === 'ec') this.ecModal.openAt(index);
+    else if (action === 'psu-powerup') this.psuPowerUpModal.openAt(index);
     else this.enterPsuView(index);
   }
 
@@ -141,7 +146,7 @@ export class UILayer {
   }
 
   get isModalOpen(): boolean {
-    return this.psuModal.isOpen || this.ecModal.isOpen;
+    return this.psuModal.isOpen || this.ecModal.isOpen || this.psuPowerUpModal.isOpen;
   }
 
   dispose(): void {
@@ -184,7 +189,7 @@ export class UILayer {
       // Disable the shortcuts while a form element has focus.
       if (event.target instanceof HTMLInputElement) return;
       // The block-diagram dialog owns the keyboard while it is open.
-      if (this.psuModal.isOpen || this.ecModal.isOpen) return;
+      if (this.isModalOpen) return;
 
       // Inside the PSU the same keys drive the PSU chain instead.
       const active = this.psuPanel.isOpen ? this.psuSequence : this.sequence;

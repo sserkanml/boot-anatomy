@@ -969,6 +969,7 @@ body {
   color: var(--phase-power);
 }
 
+.psu-tabs[hidden],
 .psu-tabpanel[hidden] {
   display: none;
 }
@@ -1476,6 +1477,13 @@ body {
 
 .psu-edge--pwrok .psu-edge-path {
   stroke: rgba(94, 200, 255, 0.55);
+}
+
+/* Control lines rather than power: the enables PS_ON# releases. */
+.psu-edge--enable .psu-edge-path {
+  stroke: rgba(61, 220, 132, 0.45);
+  stroke-dasharray: 6 4;
+  stroke-width: 1.8;
 }
 
 /* The dash offset animation is what reads as energy moving along the path. */

@@ -150,7 +150,7 @@ export function createMonitor(): MonitorObject {
     ctx!.textAlign = 'center';
     ctx!.fillStyle = '#e6edf3';
     ctx!.font = '600 24px system-ui, sans-serif';
-    ctx!.fillText('serkan', CANVAS_W / 2, y + 132);
+    ctx!.fillText('USER', CANVAS_W / 2, y + 132);
 
     // Password field
     ctx!.fillStyle = 'rgba(255,255,255,0.08)';

@@ -75,7 +75,11 @@ export class InfoPanel {
     this.action.hidden = !hasSubsteps;
     if (hasSubsteps) {
       this.action.textContent =
-        step.substepAction === 'ec' ? t(UI.ecLookInside) : t(UI.lookInsidePsu);
+        step.substepAction === 'ec'
+          ? t(UI.ecLookInside)
+          : step.substepAction === 'psu-powerup'
+            ? t(UI.psuPowerUpLookInside)
+            : t(UI.lookInsidePsu);
     }
 
     // Trigger a short enter animation whenever the step changes.
