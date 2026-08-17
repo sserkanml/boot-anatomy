@@ -4,6 +4,7 @@ import { RAIL_COLORS } from './constants';
 import { EC_STAGES } from './ecStages';
 import { PSU_POWERUP_STAGES } from './psuPowerUp';
 import { CPU_SEQUENCE_STEPS } from './cpuSequence';
+import { COREBOOT_SEQUENCE_STEPS } from './corebootSequence';
 import { VRM_SEQUENCE_STEPS } from './vrmSequence';
 import { PSU_STAGES } from './psuStages';
 
@@ -488,6 +489,47 @@ export const BOOT_STEPS: BootStep[] = [
         particles: 8,
         delay: 0.6,
         spread: 0.3,
+      },
+    ],
+  },
+  {
+    id: 'coreboot',
+    phase: 'firmware',
+    title: { en: 'coreboot — The Firmware Itself', tr: 'coreboot — Firmware’in Kendisi' },
+    signal: '_start → payload',
+    description: {
+      en: 'The firmware at the reset vector on this machine is coreboot rather than a vendor UEFI. It runs in stages sized to the memory that exists at the time: a bootblock with no RAM at all, a romstage that trains the DRAM, and a ramstage that brings up every device and builds the ACPI tables. Its last act is to jump to a payload — here, GRUB.',
+      tr: 'Bu makinede reset vector’deki firmware, üretici UEFI’si değil coreboot’tur. O anda var olan belleğe göre boyutlanmış aşamalar hâlinde çalışır: hiç RAM’i olmayan bir bootblock, DRAM’i eğiten bir romstage ve her cihazı ayağa kaldırıp ACPI tablolarını kuran bir ramstage. Son işi bir payload’a atlamaktır — burada GRUB’a.',
+    },
+    duration: 5800,
+    screen: 'post',
+    // The full chain from _start to grub_main() — see COREBOOT_SEQUENCE_STEPS.
+    substeps: COREBOOT_SEQUENCE_STEPS,
+    substepAction: 'coreboot',
+    highlight: ['spiFlash', 'cpu', 'ram', 'chipset'],
+    console: [
+      'coreboot-4.22 bootblock starting...',
+      'CBFS: found "fallback/romstage"',
+      'FSP-M: memory training ... ok',
+      'BS_WRITE_TABLES: ACPI, SMBIOS',
+      'Jumping to boot code at 0x00100000',
+    ],
+    signals: [
+      {
+        route: ['spiFlash', 'chipset', 'cpu'],
+        color: RAIL_COLORS.firmware,
+        label: 'bootblock',
+        particles: 10,
+        spread: 0.4,
+      },
+      {
+        route: ['cpu', 'ram'],
+        color: RAIL_COLORS.kernel,
+        label: 'ramstage + payload',
+        particles: 10,
+        delay: 0.45,
+        spread: 0.45,
+        persist: true,
       },
     ],
   },

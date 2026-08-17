@@ -59,13 +59,14 @@ export type AnchorId =
   | 'cpuPll' // Internal PLLs feeding the clock domains
   | 'cpuBsp' // The core elected Bootstrap Processor
   | 'cpuAp' // The cores parked in wait-for-SIPI
-  | 'cpuUcode'; // Microcode patch RAM
+  | 'cpuUcode' // Microcode patch RAM
+  | 'cpuCache'; // L2/L3 used as Cache-as-RAM before DRAM exists
 
 /** Top-level phases of the boot chain — used for colors/badges in the UI. */
 export type Phase = 'psu' | 'standby' | 'power' | 'firmware' | 'os';
 
 /** Which part of the scene a step is staged in. */
-export type SceneView = 'board' | 'psu' | 'ec' | 'vrm' | 'cpu';
+export type SceneView = 'board' | 'psu' | 'ec' | 'vrm' | 'cpu' | 'coreboot';
 
 /**
  * A stage in a walkthrough dialog: one entry in the list, one highlighted set
@@ -95,7 +96,7 @@ export interface SubstepRef {
 }
 
 /** Where a step's nested stages are explored. */
-export type SubstepAction = 'psu' | 'ec' | 'psu-powerup' | 'vrm' | 'cpu';
+export type SubstepAction = 'psu' | 'ec' | 'psu-powerup' | 'vrm' | 'cpu' | 'coreboot';
 
 /** Definition of a single visual signal path. */
 export interface SignalSpec {

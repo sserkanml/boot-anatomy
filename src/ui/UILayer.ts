@@ -3,6 +3,7 @@ import { UI } from '../i18n/strings';
 import { EC_SEQUENCE_STEPS } from '../config/ecSequence';
 import { VRM_SEQUENCE_STEPS } from '../config/vrmSequence';
 import { CPU_SEQUENCE_STEPS } from '../config/cpuSequence';
+import { COREBOOT_SEQUENCE_STEPS } from '../config/corebootSequence';
 import { PSU_SEQUENCE_STEPS } from '../config/bootSteps';
 import type { BootSequence } from '../state/BootSequence';
 import type { SceneView, SubstepAction } from '../types';
@@ -44,6 +45,7 @@ export class UILayer {
   private readonly ecPanel: PsuPanel;
   private readonly vrmPanel: PsuPanel;
   private readonly cpuPanel: PsuPanel;
+  private readonly corebootPanel: PsuPanel;
   private readonly disposers: Array<() => void> = [];
   /** Whether the board chain should resume once we leave the PSU. */
   private resumeAfterPsu = false;
@@ -55,6 +57,7 @@ export class UILayer {
     private readonly ecSequence: BootSequence,
     private readonly vrmSequence: BootSequence,
     private readonly cpuSequence: BootSequence,
+    private readonly corebootSequence: BootSequence,
     private readonly handlers: UIHandlers,
   ) {
     this.infoPanel = new InfoPanel(sequence.steps.length, (step) =>
@@ -102,6 +105,16 @@ export class UILayer {
       // Register state and verification output carry this one, not a diagram.
       { onExit: () => this.exitWalkthrough() },
     );
+    this.corebootPanel = new PsuPanel(
+      corebootSequence,
+      {
+        id: 'coreboot',
+        eyebrow: UI.corebootEyebrow,
+        title: UI.corebootTitle,
+        steps: COREBOOT_SEQUENCE_STEPS,
+      },
+      { onExit: () => this.exitWalkthrough() },
+    );
 
     this.root.append(
       this.createBrand(),
@@ -115,6 +128,7 @@ export class UILayer {
       this.ecPanel.element,
       this.vrmPanel.element,
       this.cpuPanel.element,
+      this.corebootPanel.element,
       this.psuModal.element,
       this.ecModal.element,
       this.psuPowerUpModal.element,
@@ -128,13 +142,20 @@ export class UILayer {
    * Opens a walkthrough view and starts its chain at the given stage. The board
    * chain is paused so the two are never animating at once.
    */
-  enterWalkthrough(view: 'psu' | 'ec' | 'vrm' | 'cpu', stageIndex = 0): void {
-    const panels = { psu: this.psuPanel, ec: this.ecPanel, vrm: this.vrmPanel, cpu: this.cpuPanel };
+  enterWalkthrough(view: 'psu' | 'ec' | 'vrm' | 'cpu' | 'coreboot', stageIndex = 0): void {
+    const panels = {
+      psu: this.psuPanel,
+      ec: this.ecPanel,
+      vrm: this.vrmPanel,
+      cpu: this.cpuPanel,
+      coreboot: this.corebootPanel,
+    };
     const chains = {
       psu: this.psuSequence,
       ec: this.ecSequence,
       vrm: this.vrmSequence,
       cpu: this.cpuSequence,
+      coreboot: this.corebootSequence,
     };
     const panel = panels[view];
     const chain = chains[view];
@@ -171,6 +192,7 @@ export class UILayer {
     this.ecSequence.setPaused(true);
     this.vrmSequence.setPaused(true);
     this.cpuSequence.setPaused(true);
+    this.corebootSequence.setPaused(true);
     open.hide();
     this.root.classList.remove('is-psu-view');
     this.handlers.onViewChange('board');
@@ -193,6 +215,7 @@ export class UILayer {
     if (action === 'ec') this.enterWalkthrough('ec', index);
     else if (action === 'vrm') this.enterWalkthrough('vrm', index);
     else if (action === 'cpu') this.enterWalkthrough('cpu', index);
+    else if (action === 'coreboot') this.enterWalkthrough('coreboot', index);
     else if (action === 'psu-powerup') this.psuPowerUpModal.openAt(index);
     else this.enterWalkthrough('psu', index);
   }
@@ -211,6 +234,7 @@ export class UILayer {
     if (this.ecPanel.isOpen) return this.ecPanel;
     if (this.vrmPanel.isOpen) return this.vrmPanel;
     if (this.cpuPanel.isOpen) return this.cpuPanel;
+    if (this.corebootPanel.isOpen) return this.corebootPanel;
     return null;
   }
 
@@ -263,7 +287,13 @@ export class UILayer {
   }
 
   private get walkthroughChains(): BootSequence[] {
-    return [this.psuSequence, this.ecSequence, this.vrmSequence, this.cpuSequence];
+    return [
+      this.psuSequence,
+      this.ecSequence,
+      this.vrmSequence,
+      this.cpuSequence,
+      this.corebootSequence,
+    ];
   }
 
   /** The chain driving whichever walkthrough is open, if any. */
@@ -272,6 +302,7 @@ export class UILayer {
     if (this.ecPanel.isOpen) return this.ecSequence;
     if (this.vrmPanel.isOpen) return this.vrmSequence;
     if (this.cpuPanel.isOpen) return this.cpuSequence;
+    if (this.corebootPanel.isOpen) return this.corebootSequence;
     return null;
   }
 

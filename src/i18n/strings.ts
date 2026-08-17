@@ -60,6 +60,16 @@ export const UI: Record<string, Localized> = {
   },
   ecStages: { en: 'EC stages', tr: 'EC aşamaları' },
 
+  corebootEyebrow: { en: 'coreboot', tr: 'coreboot' },
+  corebootTitle: {
+    en: 'From _start to grub_main()',
+    tr: '_start’tan grub_main()’e',
+  },
+  corebootLookInside: {
+    en: 'Walk the coreboot chain →',
+    tr: 'coreboot zincirini gez →',
+  },
+
   cpuEyebrow: { en: 'Inside the CPU', tr: 'CPU’nun İçi' },
   cpuTitle: {
     en: 'From RESET# to the first instruction',

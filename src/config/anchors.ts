@@ -99,6 +99,8 @@ export const DEFAULT_ANCHORS: Record<AnchorId, Vector3> = {
   cpuBsp: new Vector3(3.2, SIGNAL_HEIGHT, -0.4),
   cpuAp: new Vector3(7.4, SIGNAL_HEIGHT, 3.0),
   cpuUcode: new Vector3(3.0, SIGNAL_HEIGHT, 3.2),
+  // Cache-as-RAM: physically the CPU's own cache, standing in for DRAM.
+  cpuCache: new Vector3(6.2, SIGNAL_HEIGHT, -2.1),
   // The firmware flash lives next to the PCH on a real board.
   spiFlash: new Vector3(-8.2, SIGNAL_HEIGHT, 7.4),
 };
@@ -166,6 +168,19 @@ export const CPU_VIEW_ANCHORS: AnchorId[] = [
   'chipset',
   'spiFlash',
   'ram',
+];
+
+/** Anchors labelled while coreboot is running, from flash to payload. */
+export const COREBOOT_VIEW_ANCHORS: AnchorId[] = [
+  'spiFlash',
+  'chipset',
+  'cpu',
+  'cpuBsp',
+  'cpuCache',
+  'ram',
+  'm2',
+  'pcie',
+  'superio',
 ];
 
 /** Anchors labelled while the camera is on the board's power management. */
@@ -237,6 +252,7 @@ export const ANCHOR_LABELS: Record<AnchorId, string> = {
   cpuBsp: 'BSP core',
   cpuAp: 'AP cores',
   cpuUcode: 'Patch RAM',
+  cpuCache: 'Cache-as-RAM',
   spiFlash: 'SPI Flash (UEFI)',
 };
 
