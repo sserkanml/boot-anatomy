@@ -5,6 +5,7 @@ import { EC_SEQUENCE_STEPS } from './ecSequence';
 import { PSU_POWERUP_SEQUENCE_STEPS } from './psuPowerUpSequence';
 import { CPU_SEQUENCE_STEPS } from './cpuSequence';
 import { COREBOOT_SEQUENCE_STEPS } from './corebootSequence';
+import { GRUB_SEQUENCE_STEPS } from './grubSequence';
 import { VRM_SEQUENCE_STEPS } from './vrmSequence';
 import { PSU_STAGES } from './psuStages';
 
@@ -708,6 +709,7 @@ export const BOOT_STEPS: BootStep[] = [
   section('coreboot'),
   ...COREBOOT_SEQUENCE_STEPS,
   section('bootloader'),
+  ...GRUB_SEQUENCE_STEPS,
   section('kernel'),
   section('systemd'),
   section('login'),
