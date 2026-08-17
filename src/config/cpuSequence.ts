@@ -24,6 +24,7 @@ export const CPU_SEQUENCE_STEPS: BootStep[] = [
     duration: 5600,
     view: 'cpu',
     screen: 'off',
+    depth: 1,
     highlight: ['cpu', 'cpuPll'],
     console: [
       '[CPU] RESET# deasserted',
@@ -60,6 +61,7 @@ export const CPU_SEQUENCE_STEPS: BootStep[] = [
     duration: 6000,
     view: 'cpu',
     screen: 'off',
+    depth: 1,
     highlight: ['cpu', 'cpuBsp'],
     console: [
       'CR0.PE   = 0        (real mode)',
@@ -84,6 +86,7 @@ export const CPU_SEQUENCE_STEPS: BootStep[] = [
     duration: 5800,
     view: 'cpu',
     screen: 'off',
+    depth: 1,
     highlight: ['cpuBsp', 'cpuAp'],
     console: [
       '[CPU] APIC ID 0 -> BSP',
@@ -112,6 +115,7 @@ export const CPU_SEQUENCE_STEPS: BootStep[] = [
     duration: 6200,
     view: 'cpu',
     screen: 'off',
+    depth: 1,
     highlight: ['spiFlash', 'chipset', 'cpu', 'cpuUcode'],
     console: [
       '[FIT] microcode entry @ 0xFFFFFC00',
@@ -152,6 +156,7 @@ export const CPU_SEQUENCE_STEPS: BootStep[] = [
     duration: 6000,
     view: 'cpu',
     screen: 'off',
+    depth: 1,
     highlight: ['spiFlash', 'cpu', 'cpuBsp'],
     console: [
       '[ACM] loading into on-die SRAM',
@@ -181,6 +186,7 @@ export const CPU_SEQUENCE_STEPS: BootStep[] = [
     duration: 6200,
     view: 'cpu',
     screen: 'off',
+    depth: 1,
     highlight: ['cpu', 'cpuBsp', 'chipset', 'spiFlash'],
     console: [
       '[BSP] fetch 0xFFFFFFF0 ... cache miss',

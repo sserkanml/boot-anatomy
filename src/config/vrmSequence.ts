@@ -23,6 +23,7 @@ export const VRM_SEQUENCE_STEPS: BootStep[] = [
     duration: 5200,
     view: 'vrm',
     screen: 'off',
+    depth: 1,
     highlight: ['atx24', 'superio', 'chipset'],
     signals: [
       {
@@ -53,6 +54,7 @@ export const VRM_SEQUENCE_STEPS: BootStep[] = [
     duration: 5200,
     view: 'vrm',
     screen: 'off',
+    depth: 1,
     highlight: ['eps12v', 'vrm'],
     signals: [
       {
@@ -77,6 +79,7 @@ export const VRM_SEQUENCE_STEPS: BootStep[] = [
     duration: 5400,
     view: 'vrm',
     screen: 'off',
+    depth: 1,
     highlight: ['vrm', 'vcore', 'cpu'],
     signals: [
       {
@@ -101,6 +104,7 @@ export const VRM_SEQUENCE_STEPS: BootStep[] = [
     duration: 5600,
     view: 'vrm',
     screen: 'off',
+    depth: 1,
     highlight: ['vrm', 'vcore', 'vccsa', 'vccio', 'vddq', 'ram'],
     signals: [
       {
@@ -151,6 +155,7 @@ export const VRM_SEQUENCE_STEPS: BootStep[] = [
     duration: 5600,
     view: 'vrm',
     screen: 'off',
+    depth: 1,
     highlight: ['sequencer', 'vrm'],
     signals: [
       {
@@ -174,6 +179,7 @@ export const VRM_SEQUENCE_STEPS: BootStep[] = [
     duration: 5200,
     view: 'vrm',
     screen: 'off',
+    depth: 1,
     highlight: ['vcore', 'vccsa', 'vccio', 'vddq', 'sequencer'],
     signals: [
       {
@@ -218,6 +224,7 @@ export const VRM_SEQUENCE_STEPS: BootStep[] = [
     duration: 5000,
     view: 'vrm',
     screen: 'off',
+    depth: 1,
     highlight: ['sequencer', 'chipset'],
     signals: [
       {
@@ -241,6 +248,7 @@ export const VRM_SEQUENCE_STEPS: BootStep[] = [
     duration: 5400,
     view: 'vrm',
     screen: 'off',
+    depth: 1,
     highlight: ['chipset', 'cpu'],
     signals: [
       {

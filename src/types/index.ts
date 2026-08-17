@@ -162,6 +162,12 @@ export interface BootStep {
   substepAction?: SubstepAction;
   /** Shows a button that opens the block-diagram dialog for this step. */
   schematic?: boolean;
+  /**
+   * Nesting level in the timeline. 0 is a section step, 1 is one of the stages
+   * that belong to it. Purely presentational — the chain itself is flat, so
+   * every step plays in order regardless of depth.
+   */
+  depth?: 0 | 1;
 }
 
 export type BootState = 'idle' | 'running' | 'complete';

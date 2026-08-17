@@ -6,11 +6,6 @@ import { initLanguage, onLanguageChange } from './i18n';
 import { UI } from './i18n/strings';
 import { t } from './i18n';
 
-import { PSU_SEQUENCE_STEPS } from './config/bootSteps';
-import { EC_SEQUENCE_STEPS } from './config/ecSequence';
-import { VRM_SEQUENCE_STEPS } from './config/vrmSequence';
-import { CPU_SEQUENCE_STEPS } from './config/cpuSequence';
-import { COREBOOT_SEQUENCE_STEPS } from './config/corebootSequence';
 import { VIEW_CAMERAS, VIEW_FLIGHT_DURATION } from './config/constants';
 import { Picker } from './core/Picker';
 import { SceneManager } from './core/SceneManager';
@@ -50,21 +45,6 @@ function bootstrap(): void {
   // Two chains: the board story, and the PSU internals played inside the unit.
   // The PSU chain has no passive step, so it starts at index 0.
   const sequence = new BootSequence();
-  const psuSequence = new BootSequence(PSU_SEQUENCE_STEPS, 0);
-  const ecSequence = new BootSequence(EC_SEQUENCE_STEPS, 0);
-  const vrmSequence = new BootSequence(VRM_SEQUENCE_STEPS, 0);
-  const cpuSequence = new BootSequence(CPU_SEQUENCE_STEPS, 0);
-  const corebootSequence = new BootSequence(COREBOOT_SEQUENCE_STEPS, 0);
-
-  // State machines -> scene. Only one chain runs at a time, so both can drive
-  // the same scene without stepping on each other.
-  for (const chain of [sequence, psuSequence, ecSequence, vrmSequence, cpuSequence, corebootSequence]) {
-    chain.on('step:enter', ({ step, index }) => board.applyStep(step, index));
-    chain.on('progress', ({ stepProgress }) => board.setStepProgress(stepProgress));
-  }
-  sequence.on('state', ({ state }) => {
-    if (state === 'idle') board.reset();
-  });
 
   const applyView = (view: SceneView): void => {
     board.setView(view);
@@ -76,10 +56,18 @@ function bootstrap(): void {
     );
   };
 
-  const createUI = (): UILayer =>
-    new UILayer(uiContainer, sequence, psuSequence, ecSequence, vrmSequence, cpuSequence, corebootSequence, {
-      onViewChange: applyView,
-    });
+  // The chain is flat, so the step itself says where the camera belongs. That
+  // is what makes the run dive into the PSU, the EC and the CPU on its own.
+  sequence.on('step:enter', ({ step, index }) => {
+    board.applyStep(step, index);
+    applyView(step.view ?? 'board');
+  });
+  sequence.on('progress', ({ stepProgress }) => board.setStepProgress(stepProgress));
+  sequence.on('state', ({ state }) => {
+    if (state === 'idle') board.reset();
+  });
+
+  const createUI = (): UILayer => new UILayer(uiContainer, sequence);
 
   let ui = createUI();
 
@@ -87,42 +75,27 @@ function bootstrap(): void {
   // component to re-translate itself, the whole DOM layer is rebuilt and the
   // sequences re-announce where they are — language changes are rare enough.
   onLanguageChange(() => {
-    const restore = board.currentView === 'board' ? null : board.currentView;
-    const stage =
-      restore === 'ec'
-        ? ecSequence.currentIndex
-        : restore === 'vrm'
-          ? vrmSequence.currentIndex
-          : psuSequence.currentIndex;
-
     ui.dispose();
     ui = createUI();
-
     sequence.emitCurrent();
-    if (restore) ui.enterWalkthrough(restore, stage);
   });
 
   // Clicking the PSU (or activating its label) goes inside it, where the stages
   // between the wall socket and the DC rails play out in the scene itself.
   const picker = new Picker(manager.camera, manager.renderer.domElement);
   picker.register(board.psuObject, {
-    onSelect: () => ui.enterPsuView(0),
+    onSelect: () => sequence.seekToStep('psu-ac-emi'),
     onHoverChange: (hovered) => board.setPsuHighlighted(hovered),
   });
-  board.onPsuActivate = () => ui.enterPsuView(0);
-  board.onEcActivate = () => ui.openEcView();
+  board.onPsuActivate = () => sequence.seekToStep('psu-ac-emi');
+  board.onEcActivate = () => sequence.seekToStep('ec-standby');
   initLanguage();
 
   manager.onRender((dt, elapsed) => {
     sequence.update(dt);
-    psuSequence.update(dt);
-    ecSequence.update(dt);
-    vrmSequence.update(dt);
-    cpuSequence.update(dt);
-    corebootSequence.update(dt);
     board.update(dt, elapsed);
     // Picking the PSU again while already inside it would be a no-op at best.
-    picker.setEnabled(!ui.isModalOpen && !ui.isPsuViewOpen);
+    picker.setEnabled(!ui.isModalOpen);
     picker.update();
   });
 

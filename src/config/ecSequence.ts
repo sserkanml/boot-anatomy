@@ -144,6 +144,7 @@ export const EC_SEQUENCE_STEPS: BootStep[] = EC_STAGES.map((stage) => {
     duration: 5200,
     view: 'ec',
     screen: 'off',
+    depth: 1,
     highlight: scene.highlight,
     signals: scene.signals,
   };

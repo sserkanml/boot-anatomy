@@ -123,6 +123,15 @@ export class BootSequence extends Emitter<BootEvents> {
     this.emitProgress();
   }
 
+  /**
+   * Jumps to a step by id. Used by the scene: clicking the PSU should land on
+   * the first stage inside it rather than on some index nobody can predict.
+   */
+  seekToStep(id: string): void {
+    const index = this.steps.findIndex((step) => step.id === id);
+    if (index >= 0) this.seek(index);
+  }
+
   setPaused(paused: boolean): void {
     this.paused = paused;
   }

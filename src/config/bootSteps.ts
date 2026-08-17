@@ -1,8 +1,8 @@
 import type { Localized } from '../i18n';
 import type { AnchorId, BootStep, Phase, SignalSpec } from '../types';
 import { RAIL_COLORS } from './constants';
-import { EC_STAGES } from './ecStages';
-import { PSU_POWERUP_STAGES } from './psuPowerUp';
+import { EC_SEQUENCE_STEPS } from './ecSequence';
+import { PSU_POWERUP_SEQUENCE_STEPS } from './psuPowerUpSequence';
 import { CPU_SEQUENCE_STEPS } from './cpuSequence';
 import { COREBOOT_SEQUENCE_STEPS } from './corebootSequence';
 import { VRM_SEQUENCE_STEPS } from './vrmSequence';
@@ -219,6 +219,7 @@ export const PSU_SEQUENCE_STEPS: BootStep[] = PSU_STAGES.map((stage) => {
     duration: 5400,
     view: 'psu',
     screen: 'off',
+    depth: 1,
     highlight: scene.highlight,
     signals: scene.signals,
   };
@@ -232,7 +233,7 @@ export const PSU_SEQUENCE_STEPS: BootStep[] = PSU_STAGES.map((stage) => {
  * Note: index 0 (standby) is the passive/ambient step. It is shown as soon as
  * the scene loads and loops until Power is pressed; the chain starts at index 1.
  */
-export const BOOT_STEPS: BootStep[] = [
+const SECTIONS: BootStep[] = [
   {
     id: 'psu',
     phase: 'standby',
@@ -246,9 +247,6 @@ export const BOOT_STEPS: BootStep[] = [
     screen: 'off',
     schematic: true,
     // Shown nested in the timeline. These play inside the PSU view rather than
-    // in the main chain — see PSU_SEQUENCE_STEPS.
-    substeps: PSU_SEQUENCE_STEPS,
-    substepAction: 'psu',
     highlight: ['psu', 'atx24', 'superio'],
     signals: [
       {
@@ -297,9 +295,6 @@ export const BOOT_STEPS: BootStep[] = [
     duration: 4200,
     screen: 'off',
     // This single beat is eight steps inside the EC. They open in the EC
-    // dialog rather than playing here — see EC_STAGES.
-    substeps: EC_STAGES,
-    substepAction: 'ec',
     highlight: ['superio', 'atx24', 'psu'],
     console: ['[EC] S5 -> S0 transition requested', '[EC] PS_ON# -> LOW'],
     signals: [
@@ -323,9 +318,6 @@ export const BOOT_STEPS: BootStep[] = [
     duration: 5600,
     screen: 'off',
     // Everything between PS_ON# arriving and PWR_OK leaving happens inside the
-    // supply during this one beat — see PSU_POWERUP_STAGES.
-    substeps: PSU_POWERUP_STAGES,
-    substepAction: 'psu-powerup',
     highlight: ['psu', 'atx24', 'eps12v', 'vrm', 'cpu', 'ram', 'm2', 'chipset'],
     console: [
       '[PSU] main converter ON',
@@ -411,9 +403,6 @@ export const BOOT_STEPS: BootStep[] = [
     duration: 4400,
     screen: 'off',
     // Once PWR_OK lands, the board has its own power-up to do before the CPU
-    // can run — see VRM_SEQUENCE_STEPS.
-    substeps: VRM_SEQUENCE_STEPS,
-    substepAction: 'vrm',
     highlight: ['psu', 'atx24', 'chipset', 'cpu'],
     console: ['[PSU] PWR_OK -> HIGH (after 214ms)', '[PCH] deasserting CPU RESET#'],
     signals: [
@@ -447,9 +436,6 @@ export const BOOT_STEPS: BootStep[] = [
     duration: 6000,
     screen: 'post',
     // Everything between RESET# going high and the first instruction —
-    // see CPU_SEQUENCE_STEPS.
-    substeps: CPU_SEQUENCE_STEPS,
-    substepAction: 'cpu',
     highlight: ['cpu', 'ram', 'chipset', 'm2', 'pcie'],
     console: [
       'UEFI firmware v2.90 (x64)',
@@ -503,9 +489,6 @@ export const BOOT_STEPS: BootStep[] = [
     },
     duration: 5800,
     screen: 'post',
-    // The full chain from _start to grub_main() — see COREBOOT_SEQUENCE_STEPS.
-    substeps: COREBOOT_SEQUENCE_STEPS,
-    substepAction: 'coreboot',
     highlight: ['spiFlash', 'cpu', 'ram', 'chipset'],
     console: [
       'coreboot-4.22 bootblock starting...',
@@ -694,3 +677,38 @@ export const BOOT_STEPS: BootStep[] = [
 
 /** The chain starts at index 1; index 0 is the passive standby display. */
 export const FIRST_ACTIVE_STEP = 1;
+
+/**
+ * The chain as it actually plays: one flat list, every stage a step of its own.
+ *
+ * Each section step introduces what is about to happen, and the stages that
+ * belong to it follow immediately behind it carrying `depth: 1` — so the
+ * timeline can indent them while the sequence just walks straight through.
+ * A step's `view` is what moves the camera, which is how the run dives into
+ * the PSU, the EC and the CPU without anyone having to click anything.
+ */
+function section(id: string): BootStep {
+  const step = SECTIONS.find((candidate) => candidate.id === id);
+  if (!step) throw new Error(`Unknown section: ${id}`);
+  return step;
+}
+
+export const BOOT_STEPS: BootStep[] = [
+  section('psu'),
+  ...PSU_SEQUENCE_STEPS,
+  section('power-button'),
+  section('ps-on'),
+  ...EC_SEQUENCE_STEPS,
+  section('rails'),
+  ...PSU_POWERUP_SEQUENCE_STEPS,
+  section('pwr-ok'),
+  ...VRM_SEQUENCE_STEPS,
+  section('post'),
+  ...CPU_SEQUENCE_STEPS,
+  section('coreboot'),
+  ...COREBOOT_SEQUENCE_STEPS,
+  section('bootloader'),
+  section('kernel'),
+  section('systemd'),
+  section('login'),
+];

@@ -214,6 +214,16 @@ body {
   color: var(--text-dim);
 }
 
+.timeline-item.is-nested {
+  padding-left: 26px;
+  font-size: 11.5px;
+}
+
+.timeline-item.is-nested .timeline-dot {
+  width: 5px;
+  height: 5px;
+}
+
 .timeline-item.is-active {
   color: var(--text);
   background: rgba(255, 255, 255, 0.06);

@@ -23,6 +23,7 @@ export const COREBOOT_SEQUENCE_STEPS: BootStep[] = [
     duration: 5200,
     view: 'coreboot',
     screen: 'off',
+    depth: 1,
     highlight: ['spiFlash', 'cpuBsp'],
     console: ['0xFFFFFFF0: jmp _start16bit', '[coreboot] bootblock entry'],
     signals: [
@@ -47,6 +48,7 @@ export const COREBOOT_SEQUENCE_STEPS: BootStep[] = [
     duration: 5600,
     view: 'coreboot',
     screen: 'off',
+    depth: 1,
     highlight: ['cpuBsp'],
     console: [
       'cli',
@@ -72,6 +74,7 @@ export const COREBOOT_SEQUENCE_STEPS: BootStep[] = [
     duration: 5600,
     view: 'coreboot',
     screen: 'off',
+    depth: 1,
     highlight: ['cpuBsp'],
     console: [
       'ds/es/ss/fs/gs -> flat',
@@ -92,6 +95,7 @@ export const COREBOOT_SEQUENCE_STEPS: BootStep[] = [
     duration: 6000,
     view: 'coreboot',
     screen: 'off',
+    depth: 1,
     highlight: ['cpuBsp', 'cpuCache'],
     console: [
       'POST 0x21  SOC_SET_UP_CAR_MTRRS',
@@ -123,6 +127,7 @@ export const COREBOOT_SEQUENCE_STEPS: BootStep[] = [
     duration: 5400,
     view: 'coreboot',
     screen: 'off',
+    depth: 1,
     highlight: ['cpuBsp', 'superio', 'spiFlash'],
     console: [
       'coreboot-4.22 bootblock starting...',
@@ -158,6 +163,7 @@ export const COREBOOT_SEQUENCE_STEPS: BootStep[] = [
     duration: 5400,
     view: 'coreboot',
     screen: 'off',
+    depth: 1,
     highlight: ['spiFlash', 'chipset', 'cpuCache'],
     console: [
       'CBFS: found "fallback/romstage"',
@@ -186,6 +192,7 @@ export const COREBOOT_SEQUENCE_STEPS: BootStep[] = [
     duration: 6400,
     view: 'coreboot',
     screen: 'off',
+    depth: 1,
     highlight: ['cpuBsp', 'ram'],
     console: [
       'POST 0x34  MEM_PREINIT_PREP_START',
@@ -218,6 +225,7 @@ export const COREBOOT_SEQUENCE_STEPS: BootStep[] = [
     duration: 6000,
     view: 'coreboot',
     screen: 'off',
+    depth: 1,
     highlight: ['cpuCache', 'ram', 'spiFlash'],
     console: [
       'POST 0x4a  PREPARE_RAMSTAGE',
@@ -257,6 +265,7 @@ export const COREBOOT_SEQUENCE_STEPS: BootStep[] = [
     duration: 5600,
     view: 'coreboot',
     screen: 'off',
+    depth: 1,
     highlight: ['ram', 'cpuBsp'],
     console: [
       'POST 0x80  CONSOLE_READY',
@@ -280,6 +289,7 @@ export const COREBOOT_SEQUENCE_STEPS: BootStep[] = [
     duration: 6400,
     view: 'coreboot',
     screen: 'off',
+    depth: 1,
     highlight: ['chipset', 'pcie', 'm2', 'ram'],
     console: [
       'POST 0x71  BS_DEV_ENUMERATE',
@@ -328,6 +338,7 @@ export const COREBOOT_SEQUENCE_STEPS: BootStep[] = [
     duration: 5400,
     view: 'coreboot',
     screen: 'off',
+    depth: 1,
     highlight: ['spiFlash', 'ram'],
     console: [
       'POST 0x77  BS_PAYLOAD_LOAD',
@@ -357,6 +368,7 @@ export const COREBOOT_SEQUENCE_STEPS: BootStep[] = [
     duration: 5600,
     view: 'coreboot',
     screen: 'off',
+    depth: 1,
     highlight: ['ram', 'cpuBsp'],
     console: [
       'POST 0x78  BS_PAYLOAD_BOOT',
@@ -386,6 +398,7 @@ export const COREBOOT_SEQUENCE_STEPS: BootStep[] = [
     duration: 5200,
     view: 'coreboot',
     screen: 'boot',
+    depth: 1,
     highlight: ['cpuBsp', 'ram'],
     console: ['Welcome to GRUB!', 'grub_main(): console handed over'],
     signals: [],
@@ -402,6 +415,7 @@ export const COREBOOT_SEQUENCE_STEPS: BootStep[] = [
     duration: 6000,
     view: 'coreboot',
     screen: 'boot',
+    depth: 1,
     highlight: ['cpuBsp', 'ram', 'chipset'],
     console: [
       'SMM: installing handler into SMRAM',
