@@ -437,7 +437,7 @@ export const BOOT_STEPS: BootStep[] = [
   {
     id: 'post',
     phase: 'firmware',
-    title: { en: 'POST — Power-On Self-Test', tr: 'POST — Power-On Self-Test' },
+    title: { en: 'Firmware Takes Over', tr: 'Firmware Devralıyor' },
     signal: 'reset vector 0xFFFFFFF0',
     description: {
       en: 'The moment reset lifts, the CPU starts executing firmware from the reset vector. UEFI first trains the memory controller, then enumerates the PCIe and NVMe devices and builds the ACPI tables it will hand over to the operating system.',
