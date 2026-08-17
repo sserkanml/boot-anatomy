@@ -331,6 +331,22 @@ body {
   display: none;
 }
 
+/* The source location, for steps that are a real function in a real tree. */
+.info-source {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-faint);
+  margin: -4px 0 10px;
+  padding-left: 11px;
+  border-left: 2px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  word-break: break-all;
+}
+
+.info-source[hidden] {
+  display: none;
+}
+
 .info-desc {
   margin: 0;
   font-size: 13.5px;

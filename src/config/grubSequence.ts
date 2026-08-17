@@ -21,6 +21,7 @@ export const GRUB_SEQUENCE_STEPS: BootStep[] = [
     phase: 'os',
     title: { en: '_start — Multiboot Handshake', tr: '_start — Multiboot El Sıkışması' },
     signal: 'startup.S',
+    source: 'grub-core/kern/i386/coreboot/startup.S:37',
     description: {
       en: "coreboot's jump lands here. GRUB's first act is to check the Multiboot magic number — the standard handshake between a firmware and a payload — confirming it really was started in an environment it understands. Then it builds its own stack: coreboot's is no longer valid, and GRUB needs ground of its own to stand on.",
       tr: 'coreboot’un jump’ı buraya düşer. GRUB’ın ilk işi Multiboot magic sayısını denetlemektir — bir firmware ile bir payload arasındaki standart el sıkışma — böylece gerçekten anladığı bir ortamda başlatıldığını doğrular. Ardından kendi stack’ini kurar: coreboot’unki artık geçerli değildir ve GRUB’ın basacağı kendi zeminine ihtiyacı vardır.',
@@ -40,6 +41,7 @@ export const GRUB_SEQUENCE_STEPS: BootStep[] = [
     phase: 'os',
     title: { en: 'grub_main() — GRUB in C', tr: 'grub_main() — C Dünyasında GRUB' },
     signal: 'kern/main.c',
+    source: 'grub-core/kern/main.c:304',
     description: {
       en: "The real entry point of GRUB's C world. From here it proceeds entirely on its own architecture, owing nothing further to coreboot's structure.",
       tr: 'GRUB’ın C dünyasındaki gerçek giriş noktası. Buradan itibaren tamamen kendi mimarisiyle ilerler; coreboot’un yapısına artık hiçbir borcu yoktur.',
@@ -57,6 +59,7 @@ export const GRUB_SEQUENCE_STEPS: BootStep[] = [
     phase: 'os',
     title: { en: 'grub_machine_init()', tr: 'grub_machine_init()' },
     signal: { en: 'platform bring-up', tr: 'platform hazırlığı' },
+    source: 'grub-core/kern/i386/coreboot/init.c:94',
     description: {
       en: 'Platform-specific setup for the coreboot target: the VGA or framebuffer console so a menu can be drawn at all, a heap so GRUB has dynamic memory of its own, and the TSC for timing.',
       tr: 'coreboot hedefine özel kurulum: menünün çizilebilmesi için VGA ya da framebuffer konsolu, GRUB’ın kendi dinamik belleği için bir heap ve zamanlama için TSC.',
@@ -77,6 +80,7 @@ export const GRUB_SEQUENCE_STEPS: BootStep[] = [
     phase: 'os',
     title: { en: 'Reading the coreboot Table', tr: 'coreboot Tablosunu Okuma' },
     signal: 'cbtable.c',
+    source: 'grub-core/kern/i386/coreboot/cbtable.c:29',
     description: {
       en: 'Back in ramstage, BS_WRITE_TABLES left a coreboot table in memory holding everything the firmware had learned — the memory map, where the CBMEM console lives, board identity. GRUB scans memory, finds it and reads it, inheriting all of that rather than rediscovering the hardware itself.',
       tr: 'Ramstage’de BS_WRITE_TABLES, firmware’in öğrendiği her şeyi tutan bir coreboot table’ı bellekte bırakmıştı — bellek haritası, CBMEM console’un yeri, kart kimliği. GRUB belleği tarar, onu bulur ve okur; donanımı yeniden keşfetmek yerine bunların hepsini devralır.',
@@ -100,6 +104,7 @@ export const GRUB_SEQUENCE_STEPS: BootStep[] = [
     phase: 'os',
     title: { en: 'grub.cfg — The Menu Runs', tr: 'grub.cfg — Menü Çalışıyor' },
     signal: 'normal mode',
+    source: 'grub-core/kern/main.c:233',
     description: {
       en: 'grub.cfg is read and normal mode starts. From here GRUB is simply executing the commands you wrote — linux, initrd, boot — one after another.',
       tr: 'grub.cfg okunur ve normal mode başlar. Buradan itibaren GRUB yalnızca senin yazdığın komutları — linux, initrd, boot — sırayla işletiyordur.',
@@ -119,6 +124,7 @@ export const GRUB_SEQUENCE_STEPS: BootStep[] = [
     phase: 'os',
     title: { en: 'linux /vmlinuz — Opening the bzImage', tr: 'linux /vmlinuz — bzImage Açılıyor' },
     signal: 'grub_cmd_linux()',
+    source: 'grub-core/loader/i386/linux.c:675',
     description: {
       en: 'The kernel file is opened and its header read. That header carries everything a bootloader needs to know about the kernel it is about to place: sizes, version, which features it supports.',
       tr: 'Kernel dosyası açılır ve header’ı okunur. Bu header, bir bootloader’ın yerleştirmek üzere olduğu kernel hakkında bilmesi gereken her şeyi taşır: boyutlar, sürüm, desteklediği özellikler.',
@@ -181,6 +187,7 @@ export const GRUB_SEQUENCE_STEPS: BootStep[] = [
     phase: 'os',
     title: { en: 'allocate_pages() — The Relocator', tr: 'allocate_pages() — Relocator' },
     signal: 'grub_relocator_new',
+    source: 'grub-core/loader/i386/linux.c:148',
     description: {
       en: "GRUB's relocator is asked for memory at a preferred address. If the map says that region is taken or absent, it relaxes the alignment constraint step by step and tries again — which is what lets the same bootloader place a kernel across wildly different memory layouts.",
       tr: 'GRUB’ın relocator’ından tercih edilen bir adreste bellek istenir. Harita o bölgenin dolu ya da mevcut olmadığını söylüyorsa, hizalama kısıtını kademe kademe gevşetip tekrar dener — aynı bootloader’ın birbirinden çok farklı bellek yerleşimlerinde kernel yerleştirebilmesini sağlayan şey budur.',
@@ -251,6 +258,7 @@ export const GRUB_SEQUENCE_STEPS: BootStep[] = [
     phase: 'os',
     title: { en: 'initrd — Loaded High on Purpose', tr: 'initrd — Bilerek Yükseğe' },
     signal: 'PREFERENCE_HIGH',
+    source: 'grub-core/loader/i386/linux.c:1065',
     description: {
       en: 'The header declares initrd_addr_max, the highest physical address at which the kernel can still find a ramdisk. GRUB asks the relocator for memory with a HIGH preference, deliberately placing the initrd as high as it can — clear of the space the kernel will need as it decompresses downward. Then ramdisk_image and ramdisk_size go into the header, which is exactly where the kernel will look.',
       tr: 'Header, kernel’in bir ramdisk’i hâlâ bulabileceği en yüksek fiziksel adres olan initrd_addr_max’i bildirir. GRUB relocator’dan HIGH tercihiyle bellek ister ve initrd’yi bilinçli olarak olabildiğince yükseğe koyar — kernel açılırken aşağı doğru büyürken ihtiyaç duyacağı alandan uzağa. Ardından ramdisk_image ve ramdisk_size header’a yazılır; kernel tam da oraya bakacaktır.',
@@ -282,6 +290,7 @@ export const GRUB_SEQUENCE_STEPS: BootStep[] = [
     phase: 'os',
     title: { en: 'boot — screen_info Handover', tr: 'boot — screen_info Devri' },
     signal: 'grub_linux_boot()',
+    source: 'grub-core/loader/i386/linux.c:418',
     description: {
       en: 'The handover proper begins. screen_info is filled in with the current video mode — resolution, framebuffer address — so the kernel can carry on drawing where GRUB left off instead of blanking the display.',
       tr: 'Asıl devir başlar. screen_info mevcut video moduyla doldurulur — çözünürlük, framebuffer adresi — böylece kernel ekranı karartmak yerine GRUB’ın bıraktığı yerden çizmeye devam edebilir.',
@@ -366,6 +375,7 @@ export const GRUB_SEQUENCE_STEPS: BootStep[] = [
     phase: 'os',
     title: { en: 'relocator32.S — Back to a Clean Machine', tr: 'relocator32.S — Temiz Makineye Dönüş' },
     signal: { en: 'GDT · paging off', tr: 'GDT · paging kapalı' },
+    source: 'grub-core/lib/i386/relocator32.S:29',
     description: {
       en: 'A fresh GDT is loaded so the kernel starts from known segment definitions rather than whatever GRUB happened to be using. Then paging, PAE and long mode are all switched off: the 32-bit entry protocol expects a clean, flat, unpaged protected mode, so GRUB deliberately unwinds everything it had turned on.',
       tr: 'Kernel’in, GRUB’ın o an ne kullanıyorsa ondan değil bilinen segment tanımlarından başlaması için taze bir GDT yüklenir. Ardından paging, PAE ve long mode kapatılır: 32-bit giriş protokolü temiz, düz ve paging’siz bir protected mode bekler, bu yüzden GRUB açtığı her şeyi bilinçli olarak geri sarar.',
@@ -383,6 +393,7 @@ export const GRUB_SEQUENCE_STEPS: BootStep[] = [
     phase: 'os',
     title: { en: '0xEA — GRUB’s Last Instruction', tr: '0xEA — GRUB’ın Son Komutu' },
     signal: 'far jump',
+    source: 'grub-core/lib/i386/relocator32.S',
     description: {
       en: 'Every register is loaded with the value the kernel expects, and then a raw 0xEA far jump throws the CPU at code32_start with nothing in between. This is GRUB\'s final instruction — one-way, exactly like coreboot\'s jump into GRUB was.',
       tr: 'Her register kernel’in beklediği değerle doldurulur ve ardından ham bir 0xEA far jump, CPU’yu araya hiçbir şey girmeden code32_start’a fırlatır. Bu, GRUB’ın son komutudur — tıpkı coreboot’un GRUB’a atlaması gibi tek yönlü.',
@@ -410,6 +421,7 @@ export const GRUB_SEQUENCE_STEPS: BootStep[] = [
     phase: 'os',
     title: { en: 'startup_32 — Not the Kernel Yet', tr: 'startup_32 — Henüz Kernel Değil' },
     signal: 'compressed/head_64.S',
+    source: 'arch/x86/boot/compressed/head_64.S:82',
     description: {
       en: 'What runs now is not the real kernel. It is a small decompression stub bolted to the front of it: inside the bzImage the actual kernel is still compressed, and this stub exists only to unpack it. It starts in 32-bit mode.',
       tr: 'Şimdi çalışan şey gerçek kernel değildir. Onun önüne cıvatalanmış küçük bir decompression stub’ıdır: bzImage’ın içinde asıl kernel hâlâ sıkıştırılmış durur ve bu stub yalnızca onu açmak için vardır. 32-bit modda başlar.',
@@ -427,6 +439,7 @@ export const GRUB_SEQUENCE_STEPS: BootStep[] = [
     phase: 'os',
     title: { en: 'startup_64 — Into Long Mode', tr: 'startup_64 — Long Mode’a' },
     signal: { en: 'temporary page tables', tr: 'geçici sayfa tabloları' },
+    source: 'arch/x86/boot/compressed/head_64.S:278',
     description: {
       en: 'The stub moves itself from 32-bit to 64-bit. That requires paging to be on — x86-64 gives no choice — so it builds a minimal temporary page table just to make the transition legal, knowing the real kernel will replace it shortly.',
       tr: 'Stub kendini 32-bit’ten 64-bit’e taşır. Bu, paging’in açık olmasını gerektirir — x86-64 seçenek bırakmaz — bu yüzden yalnızca geçişi meşru kılmak için minimal ve geçici bir sayfa tablosu kurar; gerçek kernel’in onu kısa süre sonra değiştireceğini bilerek.',
@@ -446,6 +459,7 @@ export const GRUB_SEQUENCE_STEPS: BootStep[] = [
     phase: 'os',
     title: { en: 'extract_kernel() — Unpacking', tr: 'extract_kernel() — Açma' },
     signal: 'gzip / zstd / xz',
+    source: 'arch/x86/boot/compressed/misc.c:407',
     description: {
       en: 'The real work of the stub: the compressed kernel image is decompressed into memory with whichever algorithm it was built with. When it finishes, the entry address of the unpacked kernel is returned in %rax.',
       tr: 'Stub’ın asıl işi: sıkıştırılmış kernel imajı, hangi algoritmayla derlendiyse onunla bellekte açılır. İş bitince açılmış kernel’in giriş adresi %rax ile döndürülür.',
@@ -477,6 +491,7 @@ export const GRUB_SEQUENCE_STEPS: BootStep[] = [
     phase: 'os',
     title: { en: 'jmp *%rax — Into the Real Kernel', tr: 'jmp *%rax — Gerçek Kernel’e' },
     signal: 'head_64.S:475',
+    source: 'arch/x86/boot/compressed/head_64.S:475',
     description: {
       en: "The stub's last act: jump to the unpacked kernel's own startup_64 — a different one from the stub's, belonging to the real image. The second one-way jump in as many minutes.",
       tr: 'Stub’ın son işi: açılmış kernel’in kendi startup_64’üne atlamak — stub’ınkinden farklı, gerçek imaja ait olanına. Birkaç dakika içindeki ikinci tek yönlü jump.',
@@ -496,6 +511,7 @@ export const GRUB_SEQUENCE_STEPS: BootStep[] = [
     phase: 'os',
     title: { en: 'x86_64_start_kernel()', tr: 'x86_64_start_kernel()' },
     signal: 'head64.c:222',
+    source: 'arch/x86/kernel/head64.c:222',
     description: {
       en: 'The decompressed, real Linux kernel is now running. It builds its own permanent page tables and establishes basic CPU state, then moves on to the architecture-specific start-up path.',
       tr: 'Açılmış, gerçek Linux kernel’i artık çalışmaktadır. Kendi kalıcı sayfa tablolarını kurar ve temel CPU durumunu oturtur, ardından mimariye özel başlangıç yoluna geçer.',
@@ -513,6 +529,7 @@ export const GRUB_SEQUENCE_STEPS: BootStep[] = [
     phase: 'os',
     title: { en: 'x86_64_start_reservations()', tr: 'x86_64_start_reservations()' },
     signal: 'head64.c:294',
+    source: 'arch/x86/kernel/head64.c:294',
     description: {
       en: 'Early memory reservations, made while almost nothing else exists: the kernel\'s own text and data, and the region the initrd was loaded into — the one GRUB deliberately placed high so this would be possible.',
       tr: 'Neredeyse başka hiçbir şey yokken yapılan erken bellek rezervasyonları: kernel’in kendi kod ve veri alanları ile initrd’nin yüklendiği bölge — GRUB’ın bunun mümkün olması için bilerek yükseğe koyduğu bölge.',
@@ -532,6 +549,7 @@ export const GRUB_SEQUENCE_STEPS: BootStep[] = [
     phase: 'os',
     title: { en: 'start_kernel() — Linux Proper', tr: 'start_kernel() — Asıl Linux' },
     signal: 'init/main.c',
+    source: 'init/main.c',
     description: {
       en: 'The architecture-independent entry point of Linux. Everything x86-specific is behind us. From here the command line is parsed, the memory allocators come up, the scheduler is initialised, subsystem after subsystem is brought online — and the boot messages you actually recognise start appearing on screen.',
       tr: 'Linux’un mimariden bağımsız giriş noktası. x86’ya özgü her şey artık geride. Buradan itibaren komut satırı ayrıştırılır, bellek ayırıcıları ayağa kalkar, zamanlayıcı hazırlanır, alt sistemler birer birer devreye girer — ve ekranda gerçekten tanıdığın boot mesajları belirmeye başlar.',

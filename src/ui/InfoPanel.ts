@@ -14,6 +14,7 @@ export class InfoPanel {
   private readonly counter: HTMLElement;
   private readonly title: HTMLElement;
   private readonly signal: HTMLElement;
+  private readonly source: HTMLElement;
   private readonly description: HTMLElement;
   private readonly progressBar: HTMLElement;
   private readonly action: HTMLButtonElement;
@@ -34,6 +35,7 @@ export class InfoPanel {
       </div>
       <h2 class="info-title"></h2>
       <code class="signal-badge"></code>
+      <code class="info-source"></code>
       <p class="info-desc"></p>
       <button type="button" class="info-action" hidden></button>
       <div class="progress-track"><div class="progress-bar"></div></div>
@@ -50,6 +52,7 @@ export class InfoPanel {
     this.counter = this.query('.step-counter');
     this.title = this.query('.info-title');
     this.signal = this.query('.signal-badge');
+    this.source = this.query('.info-source');
     this.description = this.query('.info-desc');
     this.progressBar = this.query('.progress-bar');
   }
@@ -61,6 +64,14 @@ export class InfoPanel {
     this.counter.textContent = `${index + 1} / ${this.totalSteps}`;
     this.title.textContent = t(step.title);
     this.description.textContent = t(step.description);
+
+    // Only steps that are genuinely a function carry a path.
+    if (step.source) {
+      this.source.textContent = step.source;
+      this.source.hidden = false;
+    } else {
+      this.source.hidden = true;
+    }
 
     if (step.signal) {
       this.signal.textContent = t(step.signal);

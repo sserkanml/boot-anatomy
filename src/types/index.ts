@@ -163,6 +163,13 @@ export interface BootStep {
   /** Shows a button that opens the block-diagram dialog for this step. */
   schematic?: boolean;
   /**
+   * Where this step lives in source, as a repo-relative path. Only set on steps
+   * that really are a function or an entry symbol — not on ones that describe a
+   * region inside one, where a line range would imply more precision than the
+   * explanation carries.
+   */
+  source?: string;
+  /**
    * Nesting level in the timeline. 0 is a section step, 1 is one of the stages
    * that belong to it. Purely presentational — the chain itself is flat, so
    * every step plays in order regardless of depth.
