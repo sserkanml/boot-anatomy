@@ -541,4 +541,76 @@ export const KERNEL_FAQ: FaqEntry[] = [
     },
     href: 'https://en.wikipedia.org/wiki/Ext4',
   },
+  {
+    term: 'dynamic linker',
+    question: {
+      en: 'Why is the first userspace instruction not part of the program that was started?',
+      tr: 'Userspace’teki ilk talimat neden başlatılan programın parçası değil?',
+    },
+    answer: {
+      en: 'Because almost every binary on Linux is incomplete when it arrives. The code for printf, malloc and thousands of other functions lives in shared libraries, so that one copy on disk serves every program instead of each carrying its own. Something has to find those libraries and wire them up before the program can run, and that something is the dynamic linker — recorded inside the binary itself, and given control first.',
+      tr: 'Çünkü Linux’taki neredeyse her ikili, geldiğinde eksiktir. printf, malloc ve binlerce başka fonksiyonun kodu paylaşılan kütüphanelerde yaşar; böylece diskteki tek bir kopya, her programın kendi kopyasını taşıması yerine hepsine hizmet eder. Program çalışabilmeden önce birinin o kütüphaneleri bulup bağlaması gerekir ve o biri dynamic linker’dır — ikilinin içine kaydedilmiştir ve kontrolü ilk o alır.',
+    },
+    href: 'https://en.wikipedia.org/wiki/Dynamic_linker',
+  },
+  {
+    term: 'kernel module',
+    question: {
+      en: 'Why are most drivers not built into the kernel?',
+      tr: 'Çoğu sürücü neden kernel’in içine derlenmez?',
+    },
+    answer: {
+      en: 'Because a kernel containing every driver Linux supports would be hundreds of megabytes, and on any one machine almost all of it would be dead weight. Modules let a driver be loaded only when the hardware that needs it is found. The cost is the boot-time chicken-and-egg problem: the module for the root disk cannot be read from the root disk, which is the entire reason the initramfs exists.',
+      tr: 'Çünkü Linux’un desteklediği her sürücüyü içeren bir kernel yüzlerce megabayt olurdu ve herhangi bir makinede neredeyse tamamı ölü ağırlık olurdu. Modüller, bir sürücünün yalnızca ona ihtiyaç duyan donanım bulunduğunda yüklenmesini sağlar. Bedeli boot anındaki yumurta-tavuk sorunudur: kök diskin modülü kök diskten okunamaz — initramfs’in var olmasının tek sebebi budur.',
+    },
+    href: 'https://en.wikipedia.org/wiki/Loadable_kernel_module',
+  },
+  {
+    term: 'udev',
+    question: {
+      en: 'The kernel already found the devices — what is left for udev to do?',
+      tr: 'Kernel aygıtları zaten buldu — udev’e ne kalıyor?',
+    },
+    answer: {
+      en: 'Naming and policy, which the kernel deliberately refuses to decide. It reports that a device exists and emits an event; userspace decides what it should be called, what permissions it gets, which driver should own it, and whether to run something when it appears. udev applies those rules and creates the entries under /dev. Until it runs there is nothing to open, however ready the hardware is.',
+      tr: 'İsimlendirme ve politika — kernel’in bilerek karar vermeyi reddettiği şeyler. Bir aygıtın var olduğunu bildirir ve bir olay yayar; ne ad taşıyacağına, hangi izinleri alacağına, hangi sürücünün ona sahip olacağına ve göründüğünde bir şey çalıştırılıp çalıştırılmayacağına userspace karar verir. udev bu kuralları uygular ve /dev altındaki girdileri oluşturur. O çalışana kadar, donanım ne kadar hazır olursa olsun, açılacak bir şey yoktur.',
+    },
+    href: 'https://en.wikipedia.org/wiki/Udev',
+  },
+  {
+    term: 'LUKS / dm-crypt',
+    question: {
+      en: 'Why does the disk password prompt appear before the system starts?',
+      tr: 'Disk parolası neden sistem başlamadan önce sorulur?',
+    },
+    answer: {
+      en: 'Because nothing on an encrypted root can be read until the key is supplied, and the only thing running early enough to ask a person is the small system in RAM. LUKS is the on-disk format holding the encrypted key material; dm-crypt is the kernel layer that creates a virtual device decrypting every block read through it. After that the filesystem driver sees ordinary plaintext and never knows the difference.',
+      tr: 'Çünkü şifreli bir kökteki hiçbir şey anahtar verilene kadar okunamaz ve bir insana soracak kadar erken çalışan tek şey RAM’deki küçük sistemdir. LUKS, şifrelenmiş anahtar malzemesini tutan disk üzerindeki biçimdir; dm-crypt ise üzerinden okunan her bloğu deşifre eden sanal bir aygıt oluşturan kernel katmanıdır. Ondan sonra dosya sistemi sürücüsü sıradan düz metin görür ve farkı hiç bilmez.',
+    },
+    href: 'https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup',
+  },
+  {
+    term: 'LVM',
+    question: {
+      en: 'What is a logical volume, and why does it need assembling at boot?',
+      tr: 'Logical volume nedir ve neden boot’ta kurulması gerekir?',
+    },
+    answer: {
+      en: 'A layer that pools several physical disks or partitions and carves flexible volumes out of the total, so a filesystem can be grown later or moved between drives without repartitioning. That arrangement does not physically exist — it is described in metadata written on each member disk. Something has to read that metadata and present the resulting volume as a device before anything can be mounted from it.',
+      tr: 'Birden çok fiziksel diski ya da bölümü havuzlayan ve toplamdan esnek birimler oyan bir katman; böylece bir dosya sistemi sonradan büyütülebilir ya da yeniden bölümlemeye gerek kalmadan sürücüler arasında taşınabilir. Bu düzen fiziksel olarak var değildir — her üye diske yazılmış metadata’da tarif edilir. Üzerinden bir şey mount edilebilmeden önce birinin o metadata’yı okuyup ortaya çıkan birimi bir aygıt olarak sunması gerekir.',
+    },
+    href: 'https://en.wikipedia.org/wiki/Logical_Volume_Manager_(Linux)',
+  },
+  {
+    term: 'switch_root / pivot_root',
+    question: {
+      en: 'How can a running system change its own root filesystem?',
+      tr: 'Çalışan bir sistem kendi root filesystem’ini nasıl değiştirebilir?',
+    },
+    answer: {
+      en: 'Very carefully, and in one step. A process cannot exist with no root, so there is no safe moment in which the old one is detached and the new one is not yet attached — the kernel call therefore does both at once. It is not the same as chroot, which only narrows what a process can see while leaving the original root mounted. Here the old root is genuinely discarded, and the RAM it occupied is handed back.',
+      tr: 'Çok dikkatli biçimde ve tek adımda. Bir süreç köksüz var olamaz, dolayısıyla eskisinin ayrıldığı ve yenisinin henüz bağlanmadığı güvenli bir an yoktur — bu yüzden kernel çağrısı ikisini aynı anda yapar. Bu, yalnızca bir sürecin görebildiğini daraltan ve orijinal kökü mount edilmiş bırakan chroot ile aynı şey değildir. Burada eski kök gerçekten atılır ve kapladığı RAM geri verilir.',
+    },
+    href: 'https://en.wikipedia.org/wiki/Chroot',
+  },
 ];

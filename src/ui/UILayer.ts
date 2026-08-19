@@ -1,4 +1,4 @@
-import { t } from '../i18n';
+import { t, type Localized } from '../i18n';
 import { UI } from '../i18n/strings';
 import type { BootSequence } from '../state/BootSequence';
 import type { BootStep } from '../types';
@@ -10,8 +10,25 @@ import { createEcModal } from './EcModal';
 import { createKernelModal } from './KernelModal';
 import { createPsuModal } from './PsuModal';
 import { createPsuPowerUpModal } from './PsuPowerUpModal';
+import { createSystemdModal } from './SystemdModal';
 import type { ReferenceModal } from './ReferenceModal';
 import { Timeline } from './Timeline';
+
+/**
+ * What the info panel's action button says, per section step. The half that
+ * opens a block diagram and the half that opens a glossary read differently,
+ * and a button labelled "Block diagram" that opens a word list is worse than
+ * no button. Keyed by step id so this list and openSchematic stay together.
+ */
+const SCHEMATIC_LABELS: Record<string, Localized> = {
+  psu: UI.blockDiagram,
+  'ps-on': UI.blockDiagram,
+  rails: UI.blockDiagram,
+  kernel: UI.tabGlossary,
+  initramfs: UI.tabGlossary,
+  systemd: UI.tabGlossary,
+  login: UI.tabGlossary,
+};
 
 /**
  * Builds the entire DOM interface and wires it to BootSequence events.
@@ -32,13 +49,18 @@ export class UILayer {
   private readonly ecModal: ReferenceModal;
   private readonly psuPowerUpModal: ReferenceModal;
   private readonly kernelModal: ReferenceModal;
+  private readonly systemdModal: ReferenceModal;
   private readonly disposers: Array<() => void> = [];
 
   constructor(
     private readonly root: HTMLElement,
     private readonly sequence: BootSequence,
   ) {
-    this.infoPanel = new InfoPanel(sequence.steps.length, (step) => this.openSchematic(step));
+    this.infoPanel = new InfoPanel(
+      sequence.steps.length,
+      (step) => this.openSchematic(step),
+      (step) => SCHEMATIC_LABELS[step.id] ?? UI.blockDiagram,
+    );
     this.consolePanel = new ConsolePanel();
     this.timeline = new Timeline(sequence.steps, {
       onSelect: (index) => sequence.seek(index),
@@ -55,6 +77,7 @@ export class UILayer {
     this.ecModal = createEcModal();
     this.psuPowerUpModal = createPsuPowerUpModal();
     this.kernelModal = createKernelModal();
+    this.systemdModal = createSystemdModal();
 
     this.root.append(
       this.createBrand(),
@@ -68,6 +91,7 @@ export class UILayer {
       this.ecModal.element,
       this.psuPowerUpModal.element,
       this.kernelModal.element,
+      this.systemdModal.element,
     );
 
     this.bindSequence();
@@ -79,8 +103,11 @@ export class UILayer {
     if (step.id === 'psu') this.psuModal.openAt(0);
     else if (step.id === 'ps-on') this.ecModal.openAt(0);
     else if (step.id === 'rails') this.psuPowerUpModal.openAt(0);
-    // The kernel has no diagram — this one opens straight into the glossary.
-    else if (step.id === 'kernel') this.kernelModal.openAt(0);
+    // Neither of these has a diagram; both open straight into the glossary,
+    // which covers the whole span from startup_32 to systemd.
+    else if (step.id === 'kernel' || step.id === 'initramfs') this.kernelModal.openAt(0);
+    // The userspace half has its own vocabulary and its own glossary.
+    else if (step.id === 'systemd' || step.id === 'login') this.systemdModal.openAt(0);
   }
 
   get isModalOpen(): boolean {
@@ -88,7 +115,8 @@ export class UILayer {
       this.psuModal.isOpen ||
       this.ecModal.isOpen ||
       this.psuPowerUpModal.isOpen ||
-      this.kernelModal.isOpen
+      this.kernelModal.isOpen ||
+      this.systemdModal.isOpen
     );
   }
 

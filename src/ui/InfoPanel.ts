@@ -25,6 +25,12 @@ export class InfoPanel {
   constructor(
     private readonly totalSteps: number,
     onAction?: (step: BootStep) => void,
+    /**
+     * What the action button says for a given step. The panel decides whether
+     * to show it — that is `step.schematic` — but not what it opens, because
+     * the routing lives in UILayer and the two would drift apart.
+     */
+    private readonly actionLabel?: (step: BootStep) => Localized | string,
   ) {
     this.element = document.createElement('section');
     this.element.className = 'panel info-panel';
@@ -80,18 +86,13 @@ export class InfoPanel {
       this.signal.hidden = true;
     }
 
-    // Steps with nested stages offer a way into them, labelled for wherever
-    // that actually leads.
-    const hasSubsteps = (step.substeps?.length ?? 0) > 0;
-    this.action.hidden = !hasSubsteps;
-    if (hasSubsteps) {
-      const labels: Record<string, Localized> = {
-        ec: UI.ecLookInside!,
-        'psu-powerup': UI.psuPowerUpLookInside!,
-        cpu: UI.cpuLookInside!,
-        vrm: UI.vrmLookInside!,
-      };
-      this.action.textContent = t(labels[step.substepAction ?? ''] ?? UI.lookInsidePsu!);
+    // Section steps that have reference material behind them offer a way in.
+    // This used to key off `substeps`, which stopped existing when the chain
+    // was flattened — leaving every dialog unreachable by anything but a
+    // scripted click. `schematic` is the field that survived the refactor.
+    this.action.hidden = !step.schematic;
+    if (step.schematic) {
+      this.action.textContent = t(this.actionLabel?.(step) ?? UI.blockDiagram);
     }
 
     // Trigger a short enter animation whenever the step changes.

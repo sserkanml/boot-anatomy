@@ -42,14 +42,24 @@ export const UI: Record<string, Localized> = {
 
   tabGlossary: { en: 'Glossary', tr: 'Sözlük' },
 
-  kernelEyebrow: { en: 'Linux Kernel', tr: 'Linux Kernel' },
+  kernelEyebrow: { en: 'Linux', tr: 'Linux' },
   kernelTitle: {
-    en: 'The vocabulary of the kernel chain',
-    tr: 'Kernel zincirinin sözcük dağarcığı',
+    en: 'The vocabulary of the kernel and initramfs',
+    tr: 'Kernel ve initramfs’in sözcük dağarcığı',
   },
   kernelFaqIntro: {
-    en: 'The kernel chain names about forty terms it cannot avoid. Each card defines one in passing; the full answer is here. Ordered as the terms first appear on the timeline, so the entries around the one you came for are usually the ones you need next.',
-    tr: 'Kernel zinciri, kaçınamadığı kırk kadar terimi anar. Her kart bunlardan birini geçerken tanımlar; tam cevap burada. Girişler, terimlerin zaman çizelgesinde ilk göründüğü sıraya göre dizilmiştir — aradığınızın çevresindekiler genellikle bir sonraki ihtiyacınız olanlardır.',
+    en: 'From startup_32 to systemd the chain names about fifty terms it cannot avoid. Each card defines one in passing; the full answer is here. Ordered as the terms first appear on the timeline, so the entries around the one you came for are usually the ones you need next.',
+    tr: 'startup_32’den systemd’ye kadar zincir, kaçınamadığı elli kadar terimi anar. Her kart bunlardan birini geçerken tanımlar; tam cevap burada. Girişler, terimlerin zaman çizelgesinde ilk göründüğü sıraya göre dizilmiştir — aradığınızın çevresindekiler genellikle bir sonraki ihtiyacınız olanlardır.',
+  },
+
+  systemdEyebrow: { en: 'systemd', tr: 'systemd' },
+  systemdTitle: {
+    en: 'The vocabulary of userspace',
+    tr: 'Userspace’in sözcük dağarcığı',
+  },
+  systemdFaqIntro: {
+    en: 'Once PID 1 takes over, the boot stops being a sequence of instructions and becomes a dependency graph resolved at runtime. These are the terms that half of the story is written in — from the unit file up to the session that finally belongs to a person.',
+    tr: 'PID 1 devraldığı andan itibaren boot, bir talimat dizisi olmaktan çıkıp çalışma anında çözülen bir bağımlılık grafiğine dönüşür. Bunlar, hikâyenin o yarısının yazıldığı terimler — unit dosyasından, nihayet bir insana ait olan oturuma kadar.',
   },
 
   ecEyebrow: { en: 'Embedded Controller', tr: 'Embedded Controller' },

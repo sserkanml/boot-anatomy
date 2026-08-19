@@ -6,7 +6,10 @@ import { PSU_POWERUP_SEQUENCE_STEPS } from './psuPowerUpSequence';
 import { CPU_SEQUENCE_STEPS } from './cpuSequence';
 import { COREBOOT_SEQUENCE_STEPS } from './corebootSequence';
 import { GRUB_SEQUENCE_STEPS } from './grubSequence';
+import { INITRAMFS_SEQUENCE_STEPS } from './initramfsSequence';
 import { KERNEL_SEQUENCE_STEPS } from './kernelSequence';
+import { LOGIN_SEQUENCE_STEPS } from './loginSequence';
+import { SYSTEMD_SEQUENCE_STEPS } from './systemdSequence';
 import { VRM_SEQUENCE_STEPS } from './vrmSequence';
 import { PSU_STAGES } from './psuStages';
 
@@ -296,6 +299,7 @@ const SECTIONS: BootStep[] = [
     },
     duration: 4200,
     screen: 'off',
+    schematic: true,
     // This single beat is eight steps inside the EC. They open in the EC
     highlight: ['superio', 'atx24', 'psu'],
     console: ['[EC] S5 -> S0 transition requested', '[EC] PS_ON# -> LOW'],
@@ -319,6 +323,7 @@ const SECTIONS: BootStep[] = [
     },
     duration: 5600,
     screen: 'off',
+    schematic: true,
     // Everything between PS_ON# arriving and PWR_OK leaving happens inside the
     highlight: ['psu', 'atx24', 'eps12v', 'vrm', 'cpu', 'ram', 'm2', 'chipset'],
     console: [
@@ -602,6 +607,42 @@ const SECTIONS: BootStep[] = [
     ],
   },
   {
+    id: 'initramfs',
+    phase: 'os',
+    title: { en: 'initramfs — Reaching the Real Disk', tr: 'initramfs — Gerçek Diske Ulaşmak' },
+    signal: '/init',
+    description: {
+      en: 'Userspace is running, but only out of RAM. The kernel cannot mount the root filesystem without a driver, and on most machines that driver is a file on the root filesystem — so a small complete system is loaded into memory ahead of time to break the loop. It finds the hardware, unlocks the disk, mounts the real root, and then deletes itself.',
+      tr: 'Userspace çalışıyor, ama yalnızca RAM üzerinden. Kernel, root filesystem’i bir sürücü olmadan mount edemez ve çoğu makinede o sürücü root filesystem üzerinde bir dosyadır — bu yüzden döngüyü kırmak için önceden belleğe küçük ve eksiksiz bir sistem yüklenir. Donanımı bulur, diski açar, gerçek kökü mount eder ve ardından kendini siler.',
+    },
+    duration: 4800,
+    screen: 'boot',
+    schematic: true,
+    highlight: ['ram', 'm2', 'chipset'],
+    console: [
+      'Run /init as init process',
+      'systemd[1]: Running in initrd.',
+      'systemd[1]: Switching root.',
+    ],
+    signals: [
+      {
+        route: ['ram', 'm2'],
+        color: RAIL_COLORS.kernel,
+        label: 'initramfs',
+        particles: 10,
+        delay: 0,
+        spread: 0.45,
+      },
+      {
+        route: ['m2', 'cpu'],
+        color: RAIL_COLORS.kernel,
+        particles: 8,
+        delay: 0.35,
+        spread: 0.4,
+      },
+    ],
+  },
+  {
     id: 'systemd',
     phase: 'os',
     title: { en: 'systemd — PID 1', tr: 'systemd — PID 1' },
@@ -612,6 +653,7 @@ const SECTIONS: BootStep[] = [
     },
     duration: 4800,
     screen: 'boot',
+    schematic: true,
     highlight: ['cpu', 'chipset', 'm2', 'pcie'],
     console: [
       '[  OK  ] Reached target Basic System.',
@@ -654,6 +696,7 @@ const SECTIONS: BootStep[] = [
     },
     duration: 5200,
     screen: 'login',
+    schematic: true,
     highlight: ['cpu', 'pcie', 'display'],
     console: ['[  OK  ] Started GNOME Display Manager.', 'gdm-session: greeter ready'],
     signals: [
@@ -714,6 +757,10 @@ export const BOOT_STEPS: BootStep[] = [
   ...GRUB_SEQUENCE_STEPS,
   section('kernel'),
   ...KERNEL_SEQUENCE_STEPS,
+  section('initramfs'),
+  ...INITRAMFS_SEQUENCE_STEPS,
   section('systemd'),
+  ...SYSTEMD_SEQUENCE_STEPS,
   section('login'),
+  ...LOGIN_SEQUENCE_STEPS,
 ];
