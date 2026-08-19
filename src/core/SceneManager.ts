@@ -36,6 +36,11 @@ export interface SceneManagerOptions {
  * smooth orbit and a slideshow, and at phone viewing distance the loss is
  * hard to see.
  */
+/** Read live rather than cached: the preference can change mid-session. */
+function prefersReducedMotion(): boolean {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 function targetPixelRatio(): number {
   const coarse = window.matchMedia('(pointer: coarse)').matches;
   return Math.min(window.devicePixelRatio, coarse ? 1.75 : 2);
@@ -141,13 +146,19 @@ export class SceneManager {
    * suspended for the duration so a stray drag cannot fight the movement.
    */
   flyTo(position: Vector3, target: Vector3, duration = 1.4): void {
+    // A camera sweeping across the board is exactly the kind of large motion
+    // that triggers vestibular symptoms, and it carries no information the
+    // arrival does not — so honour the preference by cutting rather than
+    // flying. The duration is floored, not zeroed, so the flight still runs
+    // through the same code path and lands in the same place.
+    const wanted = prefersReducedMotion() ? 0.001 : duration;
     this.flight = {
       fromPosition: this.camera.position.clone(),
       toPosition: position.clone(),
       fromTarget: this.controls.target.clone(),
       toTarget: target.clone(),
       elapsed: 0,
-      duration: Math.max(0.001, duration),
+      duration: Math.max(0.001, wanted),
     };
     this.controls.enabled = false;
   }

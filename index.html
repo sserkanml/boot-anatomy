@@ -12,7 +12,17 @@
   </head>
   <body>
     <div id="app">
-      <canvas id="scene-canvas"></canvas>
+      <!--
+        The scene is decorative in the strict sense: everything it shows is also
+        written out in the step card, which is a live region. Labelling it as an
+        image with a summary beats both leaving it unnamed and pretending a
+        screen reader can follow 190 animated steps through it.
+      -->
+      <canvas
+        id="scene-canvas"
+        role="img"
+        aria-label="A 3D desktop motherboard with a power supply and a monitor. Signals animate along it as the boot chain plays; each step is described in text in the step card."
+      ></canvas>
       <!-- CSS2DRenderer renders the on-PCB labels into this layer -->
       <div id="labels-layer"></div>
       <!-- The entire DOM interface (panels, buttons, console) is mounted here -->

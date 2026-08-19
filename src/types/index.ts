@@ -85,19 +85,6 @@ export interface ModalStage {
   edges?: string[];
 }
 
-/**
- * The minimum a nested stage has to expose to be listed under its parent in the
- * timeline. Both full BootSteps and ModalStages satisfy it, which is what lets
- * the PSU chain and the EC walkthrough hang off the same mechanism.
- */
-export interface SubstepRef {
-  id: string;
-  title: Localized;
-}
-
-/** Where a step's nested stages are explored. */
-export type SubstepAction = 'psu' | 'ec' | 'psu-powerup' | 'vrm' | 'cpu' | 'coreboot';
-
 /** Definition of a single visual signal path. */
 export interface SignalSpec {
   /** Anchors to traverse in order. Must contain at least two entries. */
@@ -152,15 +139,9 @@ export interface BootStep {
    * which flies the camera in and makes the PSU shell transparent.
    */
   view?: SceneView;
-  /**
-   * Nested stages shown under this one in the timeline. They are not part of
-   * the main chain's playback: selecting one opens wherever `substepAction`
-   * points, which is how these detours stay detours rather than delays.
-   */
-  substeps?: SubstepRef[];
-  /** Which walkthrough a nested stage opens in. */
-  substepAction?: SubstepAction;
-  /** Shows a button that opens the block-diagram dialog for this step. */
+  /** Marks a step as having reference material behind it — a dialog, a
+   * glossary — which the info panel turns into an action button. What it
+   * opens is decided in UILayer, next to the routing. */
   schematic?: boolean;
   /**
    * Where this step lives in source, as a repo-relative path. Only set on steps

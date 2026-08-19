@@ -2035,8 +2035,28 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* Everything that moves on its own stops. Transitions are reduced to almost
+     nothing rather than removed outright: at 0s some browsers skip the
+     transitionend that a few handlers rely on, and a 1ms change is
+     indistinguishable from an instant one. */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
   .power-button,
   .console-dot {
+    animation: none;
+  }
+
+  /* The step card and the dialogs replay an entrance on every change; that is
+     decoration, and it is the motion most often noticed. */
+  .info-panel.is-entering,
+  .psu-modal-panel.is-stepping {
     animation: none;
   }
 }

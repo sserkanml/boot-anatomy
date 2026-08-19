@@ -1,5 +1,6 @@
 import { PHASE_LABELS } from '../config/bootSteps';
 import { t, type Localized } from '../i18n';
+import { UI } from '../i18n/strings';
 import type { BootStep } from '../types';
 
 /**
@@ -34,6 +35,12 @@ export class InfoPanel {
   ) {
     this.element = document.createElement('section');
     this.element.className = 'panel info-panel';
+    // The card is the only place the chain exists as words, so it is the one
+    // thing that has to be announced. `polite` because steps arrive every few
+    // seconds on their own — interrupting on each would be unusable.
+    this.element.setAttribute('aria-live', 'polite');
+    this.element.setAttribute('aria-atomic', 'true');
+    this.element.setAttribute('aria-label', t(UI.bootSteps));
     this.element.innerHTML = `
       <div class="panel-head">
         <span class="phase-chip"></span>

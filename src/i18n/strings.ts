@@ -24,16 +24,12 @@ export const UI: Record<string, Localized> = {
 
   console: { en: 'console', tr: 'console' },
   bootSteps: { en: 'Boot steps', tr: 'Boot adımları' },
-  lookInsidePsu: { en: 'Look inside the PSU →', tr: 'PSU’nun içine bak →' },
 
-  psuEyebrow: { en: 'Inside the PSU', tr: 'PSU’nun İçi' },
   psuTitle: {
     en: 'From the wall socket to the DC rails',
     tr: 'Duvar prizinden DC rail’lerine',
   },
-  backToBoard: { en: '‹ Back to board', tr: '‹ Karta dön' },
   blockDiagram: { en: 'Block diagram', tr: 'Blok şeması' },
-  psuStages: { en: 'PSU stages', tr: 'PSU aşamaları' },
 
   modalEyebrow: { en: 'Power Supply Unit', tr: 'Power Supply Unit' },
   tabDiagram: { en: 'Block diagram', tr: 'Blok şeması' },
@@ -85,52 +81,17 @@ export const UI: Record<string, Localized> = {
     en: 'The terms behind the eight steps. The EC is the least discussed chip on the board and the one most likely to be the reason a machine will not turn on.',
     tr: 'Sekiz adımın arkasındaki terimler. EC, kart üzerinde en az konuşulan ve bir makinenin açılmamasının sebebi olma ihtimali en yüksek olan yongadır.',
   },
-  ecLookInside: { en: 'Inside the EC →', tr: 'EC’nin içine bak →' },
-  ecViewTitle: {
-    en: 'From the button press to PS_ON#',
-    tr: 'Düğmeye basıştan PS_ON#’a',
-  },
-  ecStages: { en: 'EC stages', tr: 'EC aşamaları' },
-
-  corebootEyebrow: { en: 'coreboot', tr: 'coreboot' },
-  corebootTitle: {
-    en: 'From _start to grub_main()',
-    tr: '_start’tan grub_main()’e',
-  },
-  corebootLookInside: {
-    en: 'Walk the coreboot chain →',
-    tr: 'coreboot zincirini gez →',
-  },
-
-  cpuEyebrow: { en: 'Inside the CPU', tr: 'CPU’nun İçi' },
-  cpuTitle: {
-    en: 'From RESET# to the first instruction',
-    tr: 'RESET#’ten ilk komuta',
-  },
-  cpuLookInside: {
-    en: 'How the CPU wakes up →',
-    tr: 'CPU nasıl uyanıyor →',
-  },
 
   vrmEyebrow: { en: 'Board Power Management', tr: 'Kart Güç Yönetimi' },
   vrmTitle: {
     en: 'From PWR_OK to CPU RESET#',
     tr: 'PWR_OK’ten CPU RESET#’e',
   },
-  vrmStages: { en: 'Board power stages', tr: 'Kart güç aşamaları' },
-  vrmLookInside: {
-    en: 'How the board powers up →',
-    tr: 'Kart nasıl açılıyor →',
-  },
 
   psuPowerUpEyebrow: { en: 'PSU Power-Up Sequence', tr: 'PSU Açılış Sırası' },
   psuPowerUpTitle: {
     en: 'From PS_ON# to PWR_OK',
     tr: 'PS_ON#’tan PWR_OK’e',
-  },
-  psuPowerUpLookInside: {
-    en: 'How the PSU powers up →',
-    tr: 'PSU nasıl açılıyor →',
   },
   tabPinout: { en: 'Pinout', tr: 'Pinout' },
   tabFaq: { en: 'FAQ', tr: 'SSS' },
