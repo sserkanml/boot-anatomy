@@ -150,12 +150,20 @@ export class BoardScene {
 
   private currentIndex = 0;
 
+  /**
+   * Hands the chain to the signal layer, which needs it to reconstruct the
+   * board when a step is picked out of order rather than played into.
+   */
+  setChain(steps: readonly BootStep[]): void {
+    this.signals.setChain(steps);
+  }
+
   /** Applies the active step to the scene. */
   applyStep(step: BootStep, index: number): void {
     this.currentStep = step;
     this.currentIndex = index;
 
-    this.signals.enterStep(step);
+    this.signals.enterStep(step, index);
     this.labels.setActive(step.highlight ?? []);
     this.internals.setBarrierActive(step.id === 'psu-transformer');
 

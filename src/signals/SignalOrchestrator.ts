@@ -32,6 +32,14 @@ export class SignalOrchestrator {
   private readonly glowTexture: Texture;
   private active: ActiveSignal[] = [];
   private currentStepId: string | null = null;
+  /** -1 means nothing has been entered yet, so any step is a jump. */
+  private currentIndex = -1;
+  /**
+   * The whole chain, needed because what belongs on screen is a function of
+   * where you are, not of how you got there. Without it the orchestrator can
+   * only move forward one step at a time.
+   */
+  private chain: readonly BootStep[] = [];
 
   constructor(
     parent: Object3D,
@@ -42,20 +50,57 @@ export class SignalOrchestrator {
     this.glowTexture = createGlowTexture();
   }
 
-  /**
-   * Moves to a new step: starts fading out the previous step's temporary paths
-   * and creates the new ones. Persistent paths stay on screen.
-   */
-  enterStep(step: BootStep): void {
-    if (this.currentStepId === step.id) return;
-    this.currentStepId = step.id;
+  /** The chain the indices passed to enterStep refer to. */
+  setChain(steps: readonly BootStep[]): void {
+    this.chain = steps;
+  }
 
-    for (const signal of this.active) {
-      if (!signal.persist) signal.fading = true;
+  /**
+   * Moves to a step.
+   *
+   * Playing straight through is the cheap case: the previous step's temporary
+   * paths start fading, the persistent ones stay, and the new ones are added.
+   *
+   * Any other move — picking a step from the timeline, stepping backwards — is
+   * a jump, and there the incremental approach is simply wrong. Jumping forward
+   * would miss every persistent rail raised in between, and jumping backwards
+   * would leave the future still drawn on the board. So a jump rebuilds the
+   * scene from the chain: every persistent path from the steps before this one,
+   * drawn as already established, then this step's own.
+   */
+  enterStep(step: BootStep, index: number): void {
+    if (this.currentStepId === step.id && this.currentIndex === index) return;
+
+    const sequential = index === this.currentIndex + 1;
+    this.currentStepId = step.id;
+    this.currentIndex = index;
+
+    if (sequential) {
+      for (const signal of this.active) {
+        if (!signal.persist) signal.fading = true;
+      }
+    } else {
+      this.rebuildHistory(index);
     }
 
     for (const spec of step.signals) {
       this.active.push(this.createSignal(spec));
+    }
+  }
+
+  /**
+   * Puts the board into the state the steps before `index` would have left it
+   * in. Only persistent paths survive a step, so only those are replayed, and
+   * they are drawn complete rather than animated — they are history, not
+   * something happening now.
+   */
+  private rebuildHistory(index: number): void {
+    this.disposeAll();
+
+    for (let i = 0; i < index && i < this.chain.length; i += 1) {
+      for (const spec of this.chain[i]!.signals) {
+        if (spec.persist) this.active.push(this.createSignal(spec, true));
+      }
     }
   }
 
@@ -89,9 +134,15 @@ export class SignalOrchestrator {
 
   /** Removes every path immediately (on reset and after the model loads). */
   clear(): void {
+    this.disposeAll();
+    this.currentStepId = null;
+    this.currentIndex = -1;
+  }
+
+  /** Drops every path without forgetting where we are. */
+  private disposeAll(): void {
     for (const signal of this.active) signal.path.dispose();
     this.active = [];
-    this.currentStepId = null;
   }
 
   dispose(): void {
@@ -100,7 +151,12 @@ export class SignalOrchestrator {
     this.root.removeFromParent();
   }
 
-  private createSignal(spec: SignalSpec): ActiveSignal {
+  /**
+   * `alreadyDrawn` is for paths replayed from history: they appear complete and
+   * are excluded from progress updates, so the current step's progress cannot
+   * rewind a rail that was raised long before it.
+   */
+  private createSignal(spec: SignalSpec, alreadyDrawn = false): ActiveSignal {
     const path = new SignalPath({
       points: buildRoutePoints(this.anchors, spec.route),
       color: spec.color,
@@ -111,7 +167,7 @@ export class SignalOrchestrator {
 
     this.root.add(path.group);
 
-    const instant = spec.instant ?? false;
+    const instant = alreadyDrawn || (spec.instant ?? false);
     // Paths without a reveal animation show up fully drawn.
     if (instant) path.setProgress(1);
 

@@ -56,11 +56,16 @@ function bootstrap(): void {
     );
   };
 
+  board.setChain(sequence.steps);
+
   // The chain is flat, so the step itself says where the camera belongs. That
   // is what makes the run dive into the PSU, the EC and the CPU on its own.
   sequence.on('step:enter', ({ step, index }) => {
-    board.applyStep(step, index);
+    // View first: switching views drops every path, because they were routed
+    // against the anchor set of the view being left. Building the step before
+    // that would hand its signals straight to the clear.
     applyView(step.view ?? 'board');
+    board.applyStep(step, index);
   });
   sequence.on('progress', ({ stepProgress }) => board.setStepProgress(stepProgress));
   sequence.on('state', ({ state }) => {
