@@ -7,8 +7,15 @@ export interface PickHandlers {
   onHoverChange?: (hovered: boolean) => void;
 }
 
-/** A press may move this far, in pixels, and still count as a click not a drag. */
+/**
+ * A press may move this far, in pixels, and still count as a click not a drag.
+ *
+ * A mouse click barely moves, but a finger tap routinely slides ten pixels or
+ * more — at the mouse threshold almost every tap would be read as an orbit and
+ * nothing on the board would ever be selectable by touch.
+ */
 const CLICK_SLOP = 6;
+const TOUCH_SLOP = 16;
 
 /**
  * Turns pointer events on the canvas into clicks and hovers on registered
@@ -115,12 +122,19 @@ export class Picker {
 
     // An orbit drag ends far from where it began; a click barely moves.
     const moved = Math.hypot(event.clientX - pressed.x, event.clientY - pressed.y);
-    if (moved > CLICK_SLOP) return;
+    if (moved > (event.pointerType === 'touch' ? TOUCH_SLOP : CLICK_SLOP)) return;
 
     this.updatePointer(event);
     this.pointerInside = true;
     const hit = this.pick();
     if (hit) this.targets.get(hit)?.onSelect();
+
+    // There is no pointer resting on a touchscreen, so a highlight left behind
+    // after a tap would never be cleared by anything.
+    if (event.pointerType === 'touch') {
+      this.pointerInside = false;
+      this.clearHover();
+    }
   };
 
   private onPointerLeave = (): void => {

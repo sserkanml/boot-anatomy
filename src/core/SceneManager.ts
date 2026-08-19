@@ -26,6 +26,21 @@ export interface SceneManagerOptions {
  * Renderer / camera / controls / render loop. Knows nothing about the contents
  * of the scene; content modules hook into the loop through onRender().
  */
+/**
+ * Render resolution multiplier.
+ *
+ * Phones ship 3x screens attached to a fraction of the GPU, and this scene is
+ * not cheap — additive particles, a PBR environment, shadows. Rendering a 3x
+ * panel at 2x is nine times the pixels of a laptop for a device that has to
+ * stay in someone's hand. Capping lower there is the difference between a
+ * smooth orbit and a slideshow, and at phone viewing distance the loss is
+ * hard to see.
+ */
+function targetPixelRatio(): number {
+  const coarse = window.matchMedia('(pointer: coarse)').matches;
+  return Math.min(window.devicePixelRatio, coarse ? 1.75 : 2);
+}
+
 export class SceneManager {
   readonly scene: Scene;
   readonly camera: PerspectiveCamera;
@@ -65,7 +80,7 @@ export class SceneManager {
       antialias: true,
       powerPreference: 'high-performance',
     });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.setPixelRatio(targetPixelRatio());
     this.renderer.toneMapping = ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
     this.renderer.shadowMap.enabled = true;
@@ -182,7 +197,7 @@ export class SceneManager {
     const height = window.innerHeight;
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.setPixelRatio(targetPixelRatio());
     this.renderer.setSize(width, height, false);
     this.labelRenderer.setSize(width, height);
   };

@@ -116,7 +116,9 @@ export class UILayer {
     this.root.append(
       this.createBrand(),
       new LanguageSwitch().element,
+      this.timeline.backdrop,
       this.timeline.element,
+      this.timeline.toggle,
       this.infoPanel.element,
       this.consolePanel.element,
       this.controls.element,
@@ -237,6 +239,12 @@ export class UILayer {
       if (this.isModalOpen) return;
 
       const active = this.sequence;
+
+      // Escape backs out of the step sheet before it means anything else.
+      if (event.key === 'Escape' && this.timeline.isOpen) {
+        this.timeline.setOpen(false);
+        return;
+      }
 
       switch (event.key) {
         case ' ':

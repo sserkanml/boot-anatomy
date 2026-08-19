@@ -1826,38 +1826,211 @@ body {
   }
 }
 
+/* ---------- The step sheet ---------- */
+
+/* Both of these exist only below the breakpoint; the desktop layout keeps the
+   list docked beside the scene and never shows a handle. */
+.timeline-toggle,
+.timeline-backdrop,
+.timeline-grabber {
+  display: none;
+}
+
 /* ---------- Responsive layout ---------- */
 
 @media (max-width: 900px) {
-  .timeline {
-    display: none;
-  }
-
   .brand p {
     display: none;
   }
 
+  .hint {
+    display: none;
+  }
+
+  /* The list becomes a sheet: off-screen until the handle is tapped, then up
+     to two-thirds of the viewport so the scene stays visible behind it. */
+  .timeline {
+    top: auto;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    width: auto;
+    max-height: min(66vh, 520px);
+    padding: 8px 12px calc(12px + env(safe-area-inset-bottom));
+    border-radius: 16px 16px 0 0;
+    transform: translateY(101%);
+    transition: transform 0.28s cubic-bezier(0.2, 0.7, 0.3, 1);
+    z-index: 40;
+    overscroll-behavior: contain;
+  }
+
+  .timeline.is-open {
+    transform: translateY(0);
+  }
+
+  /* Sticky so it stays reachable however far down the 190 steps you scroll. */
+  .timeline-grabber {
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    width: 100%;
+    min-height: 34px;
+    margin: -8px 0 2px;
+    padding: 0;
+    border: 0;
+    background: linear-gradient(var(--panel-bg) 60%, transparent);
+    cursor: pointer;
+  }
+
+  .timeline-grabber::before {
+    content: '';
+    display: block;
+    width: 42px;
+    height: 4px;
+    margin: 10px auto 0;
+    border-radius: 999px;
+    background: var(--text-faint);
+    opacity: 0.55;
+  }
+
+  .timeline-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    background: rgba(4, 8, 14, 0.55);
+  }
+
+  .timeline-backdrop[hidden] {
+    display: none;
+  }
+
+  .timeline-toggle {
+    display: flex;
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(84px + env(safe-area-inset-bottom));
+    z-index: 30;
+    align-items: center;
+    gap: 8px;
+    /* Comfortably past the 44px minimum for a touch target. */
+    min-height: 44px;
+    padding: 0 18px;
+    border: 1px solid var(--panel-border);
+    border-radius: 999px;
+    background: var(--panel-bg);
+    backdrop-filter: blur(12px);
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 12.5px;
+    letter-spacing: 0.02em;
+  }
+
+  .timeline-toggle-grip {
+    width: 18px;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    box-shadow: 0 5px 0 currentColor, 0 -5px 0 currentColor;
+    opacity: 0.7;
+  }
+
+  /* Rows are tap targets here, not hover targets — 44px is the smallest a
+     finger reliably hits. The nested selector has to be named explicitly or
+     its own font-size, being more specific, keeps winning. */
+  .timeline-item,
+  .timeline-item.is-nested {
+    min-height: 44px;
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  .timeline-item.is-nested {
+    padding-left: 26px;
+    font-size: 12.5px;
+  }
+
   .console-panel {
-    right: 16px;
+    right: 12px;
+    left: auto;
     bottom: auto;
-    top: 76px;
-    width: min(300px, calc(100vw - 32px));
+    top: calc(70px + env(safe-area-inset-top));
+    width: min(300px, calc(100vw - 24px));
   }
 
   .info-panel {
-    left: 16px;
-    right: 16px;
-    bottom: 96px;
+    left: 12px;
+    right: 12px;
+    bottom: calc(140px + env(safe-area-inset-bottom));
     width: auto;
     padding: 14px 16px;
+    /* Some descriptions run long; the card scrolls rather than growing over
+       the whole screen. */
+    max-height: 42vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .controls {
-    bottom: 22px;
+    bottom: calc(22px + env(safe-area-inset-bottom));
   }
 
-  .hint {
+  .controls button {
+    min-height: 44px;
+  }
+
+  .lang-switch {
+    top: calc(14px + env(safe-area-inset-top));
+    right: 12px;
+  }
+
+  .brand {
+    top: calc(14px + env(safe-area-inset-top));
+    left: 12px;
+  }
+}
+
+/* Phones proper: the console is a luxury the width cannot afford. */
+@media (max-width: 560px) {
+  .console-panel {
     display: none;
+  }
+
+  .info-panel {
+    max-height: 38vh;
+  }
+
+  .brand h1 {
+    font-size: 15px;
+  }
+}
+
+/* Landscape phones are short, not narrow: the card and the sheet both have to
+   give up height rather than width. */
+@media (max-height: 480px) and (orientation: landscape) {
+  .brand,
+  .console-panel {
+    display: none;
+  }
+
+  .info-panel {
+    max-height: 46vh;
+    bottom: calc(70px + env(safe-area-inset-bottom));
+    width: min(360px, 50vw);
+    right: auto;
+  }
+
+  .timeline {
+    max-height: 82vh;
+  }
+
+  .timeline-toggle {
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    left: auto;
+    right: 12px;
+    transform: none;
   }
 }
 
