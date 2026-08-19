@@ -17,9 +17,14 @@ export interface ReferenceModalConfig {
   id: string;
   eyebrow: Localized | string;
   title: Localized;
-  /** SVG markup for the diagram tab. */
-  diagram: string;
-  stages: ModalStage[];
+  /**
+   * SVG markup for the diagram tab. Omit it for a dialog that is only
+   * reference material — the Kernel glossary has no block diagram to walk,
+   * and inventing one just to satisfy the widget would be worse than not
+   * having the tab. Stages go with it: they exist to drive the diagram.
+   */
+  diagram?: string;
+  stages?: ModalStage[];
   /** Tabs shown after the diagram tab. */
   tabs?: ModalTabDef[];
   onOpen?: () => void;
@@ -42,26 +47,36 @@ export class ReferenceModal {
 
   private readonly panel: HTMLElement;
   private readonly stageButtons: HTMLButtonElement[] = [];
-  private readonly detailIndex: HTMLElement;
-  private readonly detailTitle: HTMLElement;
-  private readonly detailBadge: HTMLElement;
-  private readonly detailBody: HTMLElement;
-  private readonly detailNote: HTMLElement;
+  private readonly detailIndex: HTMLElement | null;
+  private readonly detailTitle: HTMLElement | null;
+  private readonly detailBadge: HTMLElement | null;
+  private readonly detailBody: HTMLElement | null;
+  private readonly detailNote: HTMLElement | null;
   private readonly closeButton: HTMLButtonElement;
   private readonly footer: HTMLElement;
-  private readonly svg: SVGElement;
+  private readonly svg: SVGElement | null;
+
+  /** Empty for a reference-only dialog; the walkthrough machinery idles. */
+  private readonly stages: ModalStage[];
+  /** Where openAt() lands when the caller does not name a tab. */
+  private readonly defaultTab: string;
 
   private activeIndex = 0;
-  private activeTab = 'diagram';
+  private activeTab: string;
   private open = false;
   private previousFocus: HTMLElement | null = null;
 
   constructor(private readonly config: ReferenceModalConfig) {
     const titleId = `${config.id}-modal-title`;
+    const hasDiagram = config.diagram !== undefined;
     const tabs: ModalTabDef[] = [
-      { id: 'diagram', labelKey: 'tabDiagram', content: '' },
+      ...(hasDiagram ? [{ id: 'diagram', labelKey: 'tabDiagram', content: '' }] : []),
       ...(config.tabs ?? []),
     ];
+
+    this.stages = config.stages ?? [];
+    this.defaultTab = tabs[0]?.id ?? 'diagram';
+    this.activeTab = this.defaultTab;
 
     this.element = document.createElement('div');
     this.element.className = 'psu-modal';
@@ -88,7 +103,9 @@ export class ReferenceModal {
             .join('')}
         </div>
 
-        <div class="psu-tabpanel" data-panel="diagram">
+        ${
+          hasDiagram
+            ? `<div class="psu-tabpanel" data-panel="diagram">
           <div class="psu-diagram-wrap">${config.diagram}</div>
           <div class="psu-modal-body">
             <ol class="psu-stage-list"></ol>
@@ -102,7 +119,9 @@ export class ReferenceModal {
               <p class="psu-stage-note"></p>
             </article>
           </div>
-        </div>
+        </div>`
+            : ''
+        }
 
         ${(config.tabs ?? [])
           .map(
@@ -120,22 +139,22 @@ export class ReferenceModal {
     `;
 
     this.panel = this.query('.psu-modal-panel');
-    this.detailIndex = this.query('.psu-stage-index');
-    this.detailTitle = this.query('.psu-stage-title');
-    this.detailBadge = this.query('.psu-stage-badge');
-    this.detailBody = this.query('.psu-stage-desc');
-    this.detailNote = this.query('.psu-stage-note');
+    this.detailIndex = this.element.querySelector('.psu-stage-index');
+    this.detailTitle = this.element.querySelector('.psu-stage-title');
+    this.detailBadge = this.element.querySelector('.psu-stage-badge');
+    this.detailBody = this.element.querySelector('.psu-stage-desc');
+    this.detailNote = this.element.querySelector('.psu-stage-note');
     this.closeButton = this.query('.psu-modal-close');
     this.footer = this.query('.psu-modal-foot');
-    this.svg = this.query<HTMLElement>('svg') as unknown as SVGElement;
+    this.svg = this.element.querySelector('svg');
 
-    // A dialog with only the diagram has nothing to switch between.
+    // A dialog with a single tab has nothing to switch between.
     this.query('.psu-tabs').hidden = tabs.length < 2;
 
     this.buildStageList();
     this.bindEvents();
     this.setStage(0);
-    this.setTab('diagram');
+    this.setTab(this.defaultTab);
   }
 
   /** Switches the visible tab; stage navigation only applies to the diagram. */
@@ -158,7 +177,7 @@ export class ReferenceModal {
     return this.open;
   }
 
-  openAt(index = 0, tab = 'diagram'): void {
+  openAt(index = 0, tab = this.defaultTab): void {
     if (this.open) return;
     this.previousFocus = document.activeElement as HTMLElement | null;
     this.open = true;
@@ -180,9 +199,10 @@ export class ReferenceModal {
   }
 
   private buildStageList(): void {
-    const list = this.query<HTMLElement>('.psu-stage-list');
+    const list = this.element.querySelector<HTMLElement>('.psu-stage-list');
+    if (!list) return;
 
-    this.config.stages.forEach((stage, index) => {
+    this.stages.forEach((stage, index) => {
       const item = document.createElement('li');
       const button = document.createElement('button');
       button.type = 'button';
@@ -225,30 +245,33 @@ export class ReferenceModal {
     });
 
     // Clicking a block in the diagram jumps to the stage that owns it.
-    this.svg.addEventListener('click', (event) => {
+    this.svg?.addEventListener('click', (event) => {
       const nodeId = (event.target as Element).closest('[data-node]')?.getAttribute('data-node');
       if (!nodeId) return;
-      const index = this.config.stages.findIndex((stage) => stage.nodes.includes(nodeId));
+      const index = this.stages.findIndex((stage) => stage.nodes.includes(nodeId));
       if (index >= 0) this.setStage(index);
     });
   }
 
   private setStage(index: number): void {
-    const { stages } = this.config;
+    const { stages } = this;
+    // A reference-only dialog has no walkthrough to step through.
+    if (stages.length === 0) return;
+
     const clamped = Math.min(stages.length - 1, Math.max(0, index));
     const stage = stages[clamped]!;
     this.activeIndex = clamped;
 
-    this.detailIndex.textContent = `${clamped + 1} / ${stages.length}`;
-    this.detailTitle.textContent = t(stage.title);
-    this.detailBadge.textContent = t(stage.badge);
-    this.detailBody.textContent = t(stage.description);
+    this.detailIndex!.textContent = `${clamped + 1} / ${stages.length}`;
+    this.detailTitle!.textContent = t(stage.title);
+    this.detailBadge!.textContent = t(stage.badge);
+    this.detailBody!.textContent = t(stage.description);
 
     if (stage.note) {
-      this.detailNote.textContent = t(stage.note);
-      this.detailNote.hidden = false;
+      this.detailNote!.textContent = t(stage.note);
+      this.detailNote!.hidden = false;
     } else {
-      this.detailNote.hidden = true;
+      this.detailNote!.hidden = true;
     }
 
     this.stageButtons.forEach((button, i) => {
@@ -265,6 +288,7 @@ export class ReferenceModal {
   }
 
   private highlightDiagram(nodes: string[], edges: string[]): void {
+    if (!this.svg) return;
     for (const group of this.svg.querySelectorAll('[data-node]')) {
       const id = group.getAttribute('data-node');
       group.classList.toggle('is-active', id !== null && nodes.includes(id));

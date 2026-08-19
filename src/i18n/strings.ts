@@ -40,6 +40,18 @@ export const UI: Record<string, Localized> = {
   tabWaveforms: { en: 'Waveforms', tr: 'Dalga Şekilleri' },
   tabComponents: { en: 'Components', tr: 'Bileşenler' },
 
+  tabGlossary: { en: 'Glossary', tr: 'Sözlük' },
+
+  kernelEyebrow: { en: 'Linux Kernel', tr: 'Linux Kernel' },
+  kernelTitle: {
+    en: 'The vocabulary of the kernel chain',
+    tr: 'Kernel zincirinin sözcük dağarcığı',
+  },
+  kernelFaqIntro: {
+    en: 'The kernel chain names about forty terms it cannot avoid. Each card defines one in passing; the full answer is here. Ordered as the terms first appear on the timeline, so the entries around the one you came for are usually the ones you need next.',
+    tr: 'Kernel zinciri, kaçınamadığı kırk kadar terimi anar. Her kart bunlardan birini geçerken tanımlar; tam cevap burada. Girişler, terimlerin zaman çizelgesinde ilk göründüğü sıraya göre dizilmiştir — aradığınızın çevresindekiler genellikle bir sonraki ihtiyacınız olanlardır.',
+  },
+
   ecEyebrow: { en: 'Embedded Controller', tr: 'Embedded Controller' },
   ecTitle: {
     en: 'From the button press to PS_ON#',

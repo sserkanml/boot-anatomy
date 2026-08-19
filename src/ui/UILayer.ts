@@ -7,6 +7,7 @@ import { Controls } from './Controls';
 import { InfoPanel } from './InfoPanel';
 import { LanguageSwitch } from './LanguageSwitch';
 import { createEcModal } from './EcModal';
+import { createKernelModal } from './KernelModal';
 import { createPsuModal } from './PsuModal';
 import { createPsuPowerUpModal } from './PsuPowerUpModal';
 import type { ReferenceModal } from './ReferenceModal';
@@ -30,6 +31,7 @@ export class UILayer {
   private readonly psuModal: ReferenceModal;
   private readonly ecModal: ReferenceModal;
   private readonly psuPowerUpModal: ReferenceModal;
+  private readonly kernelModal: ReferenceModal;
   private readonly disposers: Array<() => void> = [];
 
   constructor(
@@ -52,6 +54,7 @@ export class UILayer {
     this.psuModal = createPsuModal();
     this.ecModal = createEcModal();
     this.psuPowerUpModal = createPsuPowerUpModal();
+    this.kernelModal = createKernelModal();
 
     this.root.append(
       this.createBrand(),
@@ -64,21 +67,29 @@ export class UILayer {
       this.psuModal.element,
       this.ecModal.element,
       this.psuPowerUpModal.element,
+      this.kernelModal.element,
     );
 
     this.bindSequence();
     this.bindKeyboard();
   }
 
-  /** The section steps that have a diagram behind them. */
+  /** The section steps with reference material behind them. */
   private openSchematic(step: BootStep): void {
     if (step.id === 'psu') this.psuModal.openAt(0);
     else if (step.id === 'ps-on') this.ecModal.openAt(0);
     else if (step.id === 'rails') this.psuPowerUpModal.openAt(0);
+    // The kernel has no diagram — this one opens straight into the glossary.
+    else if (step.id === 'kernel') this.kernelModal.openAt(0);
   }
 
   get isModalOpen(): boolean {
-    return this.psuModal.isOpen || this.ecModal.isOpen || this.psuPowerUpModal.isOpen;
+    return (
+      this.psuModal.isOpen ||
+      this.ecModal.isOpen ||
+      this.psuPowerUpModal.isOpen ||
+      this.kernelModal.isOpen
+    );
   }
 
   dispose(): void {

@@ -176,6 +176,8 @@ export const COREBOOT_VIEW_ANCHORS: AnchorId[] = [
   'chipset',
   'cpu',
   'cpuBsp',
+  // The kernel chain wakes these during SMP bringup, so they need a label here.
+  'cpuAp',
   'cpuCache',
   'ram',
   'm2',

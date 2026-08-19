@@ -6,6 +6,7 @@ import { PSU_POWERUP_SEQUENCE_STEPS } from './psuPowerUpSequence';
 import { CPU_SEQUENCE_STEPS } from './cpuSequence';
 import { COREBOOT_SEQUENCE_STEPS } from './corebootSequence';
 import { GRUB_SEQUENCE_STEPS } from './grubSequence';
+import { KERNEL_SEQUENCE_STEPS } from './kernelSequence';
 import { VRM_SEQUENCE_STEPS } from './vrmSequence';
 import { PSU_STAGES } from './psuStages';
 
@@ -565,9 +566,10 @@ const SECTIONS: BootStep[] = [
     },
     duration: 5000,
     screen: 'boot',
+    schematic: true,
     highlight: ['cpu', 'ram', 'm2', 'pcie'],
     console: [
-      '[    0.000000] Linux version 6.11.0',
+      '[    0.000000] Linux version 7.2.0-rc6',
       '[    0.412]  smp: Brought up 1 node, 16 CPUs',
       '[    0.884]  nvme nvme0: 8/0/0 default/read/poll queues',
       '[    1.201]  EXT4-fs (nvme0n1p2): mounted filesystem',
@@ -711,6 +713,7 @@ export const BOOT_STEPS: BootStep[] = [
   section('bootloader'),
   ...GRUB_SEQUENCE_STEPS,
   section('kernel'),
+  ...KERNEL_SEQUENCE_STEPS,
   section('systemd'),
   section('login'),
 ];
