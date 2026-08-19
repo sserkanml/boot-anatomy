@@ -1,6 +1,5 @@
 import { PHASE_LABELS } from '../config/bootSteps';
 import { t, type Localized } from '../i18n';
-import { UI } from '../i18n/strings';
 import type { BootStep } from '../types';
 
 /**
@@ -26,11 +25,12 @@ export class InfoPanel {
     private readonly totalSteps: number,
     onAction?: (step: BootStep) => void,
     /**
-     * What the action button says for a given step. The panel decides whether
-     * to show it — that is `step.schematic` — but not what it opens, because
-     * the routing lives in UILayer and the two would drift apart.
+     * What the action button says for a given step, or null when the step has
+     * nothing behind it. The panel does not decide which steps those are —
+     * that knowledge lives next to the routing in UILayer, and splitting it
+     * across two files is how the button and the dialog drift apart.
      */
-    private readonly actionLabel?: (step: BootStep) => Localized | string,
+    private readonly actionLabel?: (step: BootStep) => Localized | string | null,
   ) {
     this.element = document.createElement('section');
     this.element.className = 'panel info-panel';
@@ -86,14 +86,12 @@ export class InfoPanel {
       this.signal.hidden = true;
     }
 
-    // Section steps that have reference material behind them offer a way in.
-    // This used to key off `substeps`, which stopped existing when the chain
-    // was flattened — leaving every dialog unreachable by anything but a
-    // scripted click. `schematic` is the field that survived the refactor.
-    this.action.hidden = !step.schematic;
-    if (step.schematic) {
-      this.action.textContent = t(this.actionLabel?.(step) ?? UI.blockDiagram);
-    }
+    // Steps with reference material behind them offer a way in — the section
+    // step opens its dialog at the beginning, a nested step opens it at the
+    // stage it is describing.
+    const label = this.actionLabel?.(step) ?? null;
+    this.action.hidden = label === null;
+    if (label !== null) this.action.textContent = t(label);
 
     // Trigger a short enter animation whenever the step changes.
     this.element.classList.remove('is-entering');

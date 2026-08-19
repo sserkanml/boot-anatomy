@@ -1153,6 +1153,24 @@ body {
   stroke: #5ec8ff;
 }
 
+/* The four VRM phases. Spread around the wheel so that four traces on one
+   plot stay tellable apart without a legend. */
+.wave-path--phase1 {
+  stroke: #ffb347;
+}
+
+.wave-path--phase2 {
+  stroke: #8be9fd;
+}
+
+.wave-path--phase3 {
+  stroke: #7bd88f;
+}
+
+.wave-path--phase4 {
+  stroke: #d78bff;
+}
+
 .wave-trace-name {
   fill: var(--text-faint);
   font-family: var(--mono);

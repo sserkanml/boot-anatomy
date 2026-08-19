@@ -177,6 +177,16 @@ export class ReferenceModal {
     return this.open;
   }
 
+  /**
+   * Opens on the stage with this id, falling back to the first if the id is
+   * unknown. Used by a timeline card to open the dialog already showing the
+   * stage it was describing, rather than sending the reader back to step one.
+   */
+  openStage(stageId: string): void {
+    const index = this.stages.findIndex((stage) => stage.id === stageId);
+    this.openAt(Math.max(0, index));
+  }
+
   openAt(index = 0, tab = this.defaultTab): void {
     if (this.open) return;
     this.previousFocus = document.activeElement as HTMLElement | null;

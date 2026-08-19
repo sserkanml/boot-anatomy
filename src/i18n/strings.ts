@@ -52,6 +52,16 @@ export const UI: Record<string, Localized> = {
     tr: 'startup_32’den systemd’ye kadar zincir, kaçınamadığı elli kadar terimi anar. Her kart bunlardan birini geçerken tanımlar; tam cevap burada. Girişler, terimlerin zaman çizelgesinde ilk göründüğü sıraya göre dizilmiştir — aradığınızın çevresindekiler genellikle bir sonraki ihtiyacınız olanlardır.',
   },
 
+  vrmWaveformIntro: {
+    en: 'Almost every plot here is an argument for why a VRM is built out of four of everything rather than one. The phases exist to cancel each other out, and the only way to see that is to draw them together.',
+    tr: 'Buradaki neredeyse her grafik, bir VRM’in neden her şeyden bir tane yerine dört tane ile kurulduğunun gerekçesidir. Fazlar birbirini götürmek için vardır ve bunu görmenin tek yolu onları bir arada çizmektir.',
+  },
+  vrmFaqIntro: {
+    en: 'The terms behind the eight steps. Most questions about a VRM come down to two things: why there are four of everything, and why a circuit that can deliver two hundred amps still cannot hold the voltage perfectly still.',
+    tr: 'Sekiz adımın arkasındaki terimler. Bir VRM hakkındaki soruların çoğu iki şeye iner: neden her şeyden dört tane var ve iki yüz amper verebilen bir devre neden gerilimi yine de tam sabit tutamıyor.',
+  },
+  vrmDetail: { en: 'Detail →', tr: 'Ayrıntı →' },
+
   systemdEyebrow: { en: 'systemd', tr: 'systemd' },
   systemdTitle: {
     en: 'The vocabulary of userspace',

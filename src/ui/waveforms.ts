@@ -25,7 +25,29 @@ export type WaveSpec =
   /** A rail ramping up from zero and settling. */
   | { kind: 'ramp'; start?: number; rise?: number; level?: number }
   /** A logic signal that goes high once and stays there. */
-  | { kind: 'step'; at?: number; level?: number };
+  | { kind: 'step'; at?: number; level?: number }
+  /**
+   * Inductor current in one phase of a buck converter: a triangle, because the
+   * current ramps up while the high-side switch is on and back down while it is
+   * off. It is asymmetric — `duty` sets how much of the period is spent ramping
+   * up — and that asymmetry is not cosmetic: it is the reason four phases do
+   * not cancel perfectly. `phase` shifts it, which is how a multi-phase VRM
+   * staggers its phases against each other.
+   */
+  | { kind: 'triangle'; cycles?: number; phase?: number; amplitude?: number; level?: number; duty?: number }
+  /**
+   * The sum of `phases` such triangles evenly spread over the period, divided
+   * back down to the per-phase average so the two plots compare like with like.
+   * What is left is real residual ripple at `phases` times the switching
+   * frequency — small, but not the flat line an idealised symmetric triangle
+   * would wrongly produce.
+   */
+  | { kind: 'phaseSum'; cycles?: number; phases?: number; amplitude?: number; level?: number; duty?: number }
+  /**
+   * A regulated rail hit by a sudden load step: it dips as the inductors cannot
+   * change current instantly, then the loop pulls it back.
+   */
+  | { kind: 'droop'; at?: number; depth?: number; recover?: number; level?: number; settle?: number };
 
 export type Tone =
   | 'accent'
@@ -34,7 +56,11 @@ export type Tone =
   | 'v5'
   | 'v33'
   | 'standby'
-  | 'ok';
+  | 'ok'
+  | 'phase1'
+  | 'phase2'
+  | 'phase3'
+  | 'phase4';
 
 export interface Trace {
   spec: WaveSpec;
@@ -144,7 +170,44 @@ function sampler(spec: WaveSpec): (t: number) => number {
       const { at = 0.55, level = 0.55 } = spec;
       return (t) => (t < at ? -0.85 : level);
     }
+    case 'triangle': {
+      const { cycles = 6, phase = 0, amplitude = 0.34, level = 0, duty = 0.5 } = spec;
+      return (t) => level + triangleAt(t, cycles, phase, duty) * amplitude;
+    }
+    case 'phaseSum': {
+      const { cycles = 6, phases = 4, amplitude = 0.34, level = 0, duty = 0.5 } = spec;
+      return (t) => {
+        let sum = 0;
+        for (let i = 0; i < phases; i += 1) sum += triangleAt(t, cycles, i / phases, duty);
+        // Divided by the phase count so the plot compares like with like: this
+        // is the same average current, carrying much less ripple.
+        return level + (sum / phases) * amplitude;
+      };
+    }
+    case 'droop': {
+      const { at = 0.4, depth = 0.42, recover = 0.28, level = 0.45, settle = 0.12 } = spec;
+      return (t) => {
+        if (t < at) return level;
+        const p = (t - at) / recover;
+        if (p >= 1) return level - settle;
+        // Fall fast, come back slowly, and settle slightly low — the loop is
+        // deliberately allowed to keep a droop proportional to the load.
+        const dip = depth * Math.exp(-p * 4) * Math.sin(Math.PI * Math.min(1, p * 1.6));
+        return level - settle * p - dip;
+      };
+    }
   }
+}
+
+/**
+ * Inductor current over one switching period, in -1..1, offset by `phase` of a
+ * cycle. `duty` is the fraction spent ramping up — steeply, because the input
+ * is twelve times the output — against a long shallow ramp down. Equal halves
+ * would be a lie that happens to cancel exactly when summed.
+ */
+function triangleAt(t: number, cycles: number, phase: number, duty: number): number {
+  const u = (t * cycles + phase) % 1;
+  return u < duty ? -1 + (2 * u) / duty : 1 - (2 * (u - duty)) / (1 - duty);
 }
 
 function renderTrace(trace: Trace): string {

@@ -33,9 +33,18 @@ function renderStage(stage: WaveStage): string {
     </section>`;
 }
 
-/** The waveform tab: the same ten stages, told through the shape of the signal. */
-export function createWaveformView(): string {
+/**
+ * Renders a waveform tab from any set of stages. Shared by the PSU and the VRM
+ * because the two tell the same kind of story — a shape being turned into a
+ * better shape — and there is nothing supply-specific in the rendering.
+ */
+export function renderWaveformStages(stages: WaveStage[], intro: string): string {
   return `
-    <p class="tab-intro">${escapeHtml(t(UI.waveformIntro))}</p>
-    ${PSU_WAVEFORMS.map(renderStage).join('')}`;
+    <p class="tab-intro">${escapeHtml(intro)}</p>
+    ${stages.map(renderStage).join('')}`;
+}
+
+/** The PSU waveform tab: the same ten stages, told through the shape of the signal. */
+export function createWaveformView(): string {
+  return renderWaveformStages(PSU_WAVEFORMS, t(UI.waveformIntro));
 }

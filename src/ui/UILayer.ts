@@ -11,24 +11,56 @@ import { createKernelModal } from './KernelModal';
 import { createPsuModal } from './PsuModal';
 import { createPsuPowerUpModal } from './PsuPowerUpModal';
 import { createSystemdModal } from './SystemdModal';
+import { createVrmModal } from './VrmModal';
 import type { ReferenceModal } from './ReferenceModal';
 import { Timeline } from './Timeline';
 
 /**
- * What the info panel's action button says, per section step. The half that
+ * What the info panel's action button says on a section step. The half that
  * opens a block diagram and the half that opens a glossary read differently,
  * and a button labelled "Block diagram" that opens a word list is worse than
  * no button. Keyed by step id so this list and openSchematic stay together.
  */
-const SCHEMATIC_LABELS: Record<string, Localized> = {
+const SECTION_LABELS: Record<string, Localized> = {
   psu: UI.blockDiagram,
   'ps-on': UI.blockDiagram,
   rails: UI.blockDiagram,
+  'pwr-ok': UI.blockDiagram,
   kernel: UI.tabGlossary,
   initramfs: UI.tabGlossary,
   systemd: UI.tabGlossary,
   login: UI.tabGlossary,
 };
+
+/** Which dialog a section step opens. */
+type ModalKey = 'psu' | 'ec' | 'psu-powerup' | 'vrm' | 'kernel' | 'systemd';
+
+const SECTION_MODALS: Record<string, ModalKey> = {
+  psu: 'psu',
+  'ps-on': 'ec',
+  rails: 'psu-powerup',
+  'pwr-ok': 'vrm',
+  kernel: 'kernel',
+  initramfs: 'kernel',
+  systemd: 'systemd',
+  login: 'systemd',
+};
+
+/**
+ * The hardware chains whose nested steps each correspond to one stage of a
+ * dialog. Every id in them is the dialog's stage id with a prefix, which is
+ * what lets a card open the dialog already showing the stage being described
+ * rather than dumping the reader at the beginning.
+ *
+ * Order matters: `psu-up-` has to be tested before `psu-`, or the power-up
+ * chain would be mistaken for the supply's own.
+ */
+const DETAIL_CHAINS: ReadonlyArray<{ prefix: string; modal: ModalKey }> = [
+  { prefix: 'psu-up-', modal: 'psu-powerup' },
+  { prefix: 'psu-', modal: 'psu' },
+  { prefix: 'ec-', modal: 'ec' },
+  { prefix: 'vrm-', modal: 'vrm' },
+];
 
 /**
  * Builds the entire DOM interface and wires it to BootSequence events.
@@ -50,6 +82,7 @@ export class UILayer {
   private readonly psuPowerUpModal: ReferenceModal;
   private readonly kernelModal: ReferenceModal;
   private readonly systemdModal: ReferenceModal;
+  private readonly vrmModal: ReferenceModal;
   private readonly disposers: Array<() => void> = [];
 
   constructor(
@@ -59,7 +92,7 @@ export class UILayer {
     this.infoPanel = new InfoPanel(
       sequence.steps.length,
       (step) => this.openSchematic(step),
-      (step) => SCHEMATIC_LABELS[step.id] ?? UI.blockDiagram,
+      (step) => this.actionLabel(step),
     );
     this.consolePanel = new ConsolePanel();
     this.timeline = new Timeline(sequence.steps, {
@@ -78,6 +111,7 @@ export class UILayer {
     this.psuPowerUpModal = createPsuPowerUpModal();
     this.kernelModal = createKernelModal();
     this.systemdModal = createSystemdModal();
+    this.vrmModal = createVrmModal();
 
     this.root.append(
       this.createBrand(),
@@ -92,22 +126,60 @@ export class UILayer {
       this.psuPowerUpModal.element,
       this.kernelModal.element,
       this.systemdModal.element,
+      this.vrmModal.element,
     );
 
     this.bindSequence();
     this.bindKeyboard();
   }
 
-  /** The section steps with reference material behind them. */
+  private modal(key: ModalKey): ReferenceModal {
+    switch (key) {
+      case 'psu':
+        return this.psuModal;
+      case 'ec':
+        return this.ecModal;
+      case 'psu-powerup':
+        return this.psuPowerUpModal;
+      case 'vrm':
+        return this.vrmModal;
+      case 'kernel':
+        return this.kernelModal;
+      case 'systemd':
+        return this.systemdModal;
+    }
+  }
+
+  /**
+   * A nested step's dialog and the stage inside it, or null when the step is
+   * software with no diagram to point at.
+   */
+  private detailTarget(step: BootStep): { key: ModalKey; stageId: string } | null {
+    for (const chain of DETAIL_CHAINS) {
+      if (step.id.startsWith(chain.prefix)) {
+        return { key: chain.modal, stageId: step.id.slice(chain.prefix.length) };
+      }
+    }
+    return null;
+  }
+
+  /** What the action button says, or null to hide it. */
+  private actionLabel(step: BootStep): Localized | null {
+    const section = SECTION_LABELS[step.id];
+    if (section) return section;
+    return this.detailTarget(step) ? UI.vrmDetail : null;
+  }
+
+  /** Opens whatever sits behind the step — at its stage, if it has one. */
   private openSchematic(step: BootStep): void {
-    if (step.id === 'psu') this.psuModal.openAt(0);
-    else if (step.id === 'ps-on') this.ecModal.openAt(0);
-    else if (step.id === 'rails') this.psuPowerUpModal.openAt(0);
-    // Neither of these has a diagram; both open straight into the glossary,
-    // which covers the whole span from startup_32 to systemd.
-    else if (step.id === 'kernel' || step.id === 'initramfs') this.kernelModal.openAt(0);
-    // The userspace half has its own vocabulary and its own glossary.
-    else if (step.id === 'systemd' || step.id === 'login') this.systemdModal.openAt(0);
+    const sectionKey = SECTION_MODALS[step.id];
+    if (sectionKey) {
+      this.modal(sectionKey).openAt(0);
+      return;
+    }
+
+    const detail = this.detailTarget(step);
+    if (detail) this.modal(detail.key).openStage(detail.stageId);
   }
 
   get isModalOpen(): boolean {
@@ -116,7 +188,8 @@ export class UILayer {
       this.ecModal.isOpen ||
       this.psuPowerUpModal.isOpen ||
       this.kernelModal.isOpen ||
-      this.systemdModal.isOpen
+      this.systemdModal.isOpen ||
+      this.vrmModal.isOpen
     );
   }
 
