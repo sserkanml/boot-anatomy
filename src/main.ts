@@ -8,7 +8,7 @@ import { t } from './i18n';
 
 import { VIEW_CAMERAS, VIEW_FLIGHT_DURATION } from './config/constants';
 import { Picker } from './core/Picker';
-import { SceneManager } from './core/SceneManager';
+import { SceneManager, diagnoseWebGL } from './core/SceneManager';
 import { createLighting } from './core/lighting';
 import { BoardScene } from './scene/BoardScene';
 import { createEnvironment } from './scene/environment';
@@ -126,5 +126,8 @@ try {
   bootstrap();
 } catch (error) {
   console.error(error);
-  showFatalError(t(UI.sceneFailedBody));
+  // Which message is true depends on why it failed, and the two call for
+  // completely different actions from the reader.
+  const failure = diagnoseWebGL();
+  showFatalError(t(failure === 'no-webgl' ? UI.sceneFailedNoWebgl : UI.sceneFailedGpu));
 }

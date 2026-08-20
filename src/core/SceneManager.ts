@@ -23,9 +23,54 @@ export interface SceneManagerOptions {
 }
 
 /**
- * Renderer / camera / controls / render loop. Knows nothing about the contents
- * of the scene; content modules hook into the loop through onRender().
+ * Context options to try, best first.
+ *
+ * `high-performance` is a hint the browser acts on, and on a machine with
+ * hybrid graphics or a partly blocked GPU it can be the difference between a
+ * context and no context at all — asking for the discrete chip fails where
+ * letting the browser choose would have worked. Dropping antialiasing last
+ * gives the weakest configuration a chance before giving up.
  */
+const CONTEXT_ATTEMPTS: ReadonlyArray<{ antialias: boolean; powerPreference?: 'high-performance' | 'low-power' }> = [
+  { antialias: true, powerPreference: 'high-performance' },
+  { antialias: true },
+  { antialias: false, powerPreference: 'low-power' },
+];
+
+/** Why the scene could not start, for a message that is actually actionable. */
+export type WebGLFailure = 'no-webgl' | 'gpu-unavailable';
+
+/**
+ * Distinguishes a browser with no WebGL from one whose GPU is unavailable.
+ *
+ * The second is far more common now: Chrome stopped falling back to software
+ * rendering for WebGL, so a blocked driver, a VM, a remote desktop session or
+ * an enterprise policy all end the same way — the API is present, the context
+ * is not. Telling those two apart is the difference between "update your
+ * browser" and "check chrome://gpu", and only one of them is ever true.
+ */
+export function diagnoseWebGL(): WebGLFailure {
+  if (typeof WebGLRenderingContext === 'undefined') return 'no-webgl';
+  return 'gpu-unavailable';
+}
+
+function createRenderer(canvas: HTMLCanvasElement): WebGLRenderer {
+  let lastError: unknown;
+  for (const attempt of CONTEXT_ATTEMPTS) {
+    try {
+      return new WebGLRenderer({ canvas, ...attempt });
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error('WebGL context creation failed');
+}
+
+/** Read live rather than cached: the preference can change mid-session. */
+function prefersReducedMotion(): boolean {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 /**
  * Render resolution multiplier.
  *
@@ -36,16 +81,15 @@ export interface SceneManagerOptions {
  * smooth orbit and a slideshow, and at phone viewing distance the loss is
  * hard to see.
  */
-/** Read live rather than cached: the preference can change mid-session. */
-function prefersReducedMotion(): boolean {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
-
 function targetPixelRatio(): number {
   const coarse = window.matchMedia('(pointer: coarse)').matches;
   return Math.min(window.devicePixelRatio, coarse ? 1.75 : 2);
 }
 
+/**
+ * Renderer / camera / controls / render loop. Knows nothing about the contents
+ * of the scene; content modules hook into the loop through onRender().
+ */
 export class SceneManager {
   readonly scene: Scene;
   readonly camera: PerspectiveCamera;
@@ -80,11 +124,7 @@ export class SceneManager {
     );
     this.camera.position.set(...CAMERA.position);
 
-    this.renderer = new WebGLRenderer({
-      canvas,
-      antialias: true,
-      powerPreference: 'high-performance',
-    });
+    this.renderer = createRenderer(canvas);
     this.renderer.setPixelRatio(targetPixelRatio());
     this.renderer.toneMapping = ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;

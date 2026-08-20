@@ -105,9 +105,13 @@ export const UI: Record<string, Localized> = {
     en: 'The scene could not start',
     tr: 'Sahne başlatılamadı',
   },
-  sceneFailedBody: {
-    en: 'Your browser may not have WebGL enabled. Check that hardware acceleration is on and reload the page.',
-    tr: 'Tarayıcında WebGL kapalı olabilir. Donanım hızlandırmasının açık olduğunu kontrol edip sayfayı yenile.',
+  sceneFailedNoWebgl: {
+    en: 'This browser does not support WebGL. A current version of Chrome, Firefox, Edge or Safari will run the scene.',
+    tr: 'Bu tarayıcı WebGL desteklemiyor. Güncel bir Chrome, Firefox, Edge ya da Safari sahneyi çalıştırır.',
+  },
+  sceneFailedGpu: {
+    en: 'The browser supports WebGL but could not reach the graphics card, so the 3D scene cannot start. Chrome no longer falls back to software rendering, which is why this ends here rather than running slowly. Open chrome://gpu and look at WebGL: if it says Disabled or Software only, turn on "Use graphics acceleration when available" in Settings → System, update the graphics driver, and reload. Remote desktop sessions and virtual machines commonly hit this too. Everything the scene shows is also written out step by step at github.com/sserkanml/boot-anatomy/blob/main/docs/boot-chain.md',
+    tr: 'Tarayıcı WebGL destekliyor ama ekran kartına ulaşamadı, bu yüzden 3D sahne başlayamıyor. Chrome artık yazılımsal render’a düşmüyor; yavaş çalışmak yerine burada durmasının sebebi bu. chrome://gpu adresini açıp WebGL satırına bak: Disabled ya da Software only yazıyorsa Ayarlar → Sistem altında “Kullanılabilir olduğunda donanım hızlandırmayı kullan” seçeneğini aç, ekran kartı sürücüsünü güncelle ve sayfayı yenile. Uzak masaüstü oturumları ve sanal makineler de sık sık bu duruma düşer. Sahnenin gösterdiği her şey adım adım github.com/sserkanml/boot-anatomy/blob/main/docs/boot-chain.md adresinde de yazılı.',
   },
 
   language: { en: 'Language', tr: 'Dil' },
