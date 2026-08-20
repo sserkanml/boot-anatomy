@@ -167,12 +167,16 @@ export class BoardScene {
     this.labels.setActive(step.highlight ?? []);
     this.internals.setBarrierActive(step.id === 'psu-transformer');
 
-    // The monitor and the PSU fan follow the main chain only; stepping through
-    // the PSU internals must not rewind what the board is doing.
-    if ((step.view ?? 'board') === 'board') {
-      this.monitor.setScreen(step.screen ?? 'off', step.console ?? []);
-      this.psu.setRunning(PSU_RUNNING_FROM >= 0 && index >= PSU_RUNNING_FROM);
-    }
+    // Both of these are a function of where you are, not of how you got here.
+    //
+    // The monitor used to update only on board-view steps, which dated from
+    // when the PSU chain was a detour you could enter at any moment. Once the
+    // chain was flattened that guard hid two thirds of it — every coreboot,
+    // GRUB and kernel step asking for the boot log was ignored, so the screen
+    // kept whatever the last board step happened to leave on it. Each step now
+    // states the screen for its own position and the monitor simply obeys.
+    this.monitor.setScreen(step.screen ?? 'off', step.console ?? []);
+    this.psu.setRunning(PSU_RUNNING_FROM >= 0 && index >= PSU_RUNNING_FROM);
   }
 
   setStepProgress(progress: number): void {

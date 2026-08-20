@@ -288,7 +288,7 @@ export const COREBOOT_SEQUENCE_STEPS: BootStep[] = [
     },
     duration: 6400,
     view: 'coreboot',
-    screen: 'off',
+    screen: 'post',
     depth: 1,
     highlight: ['chipset', 'pcie', 'm2', 'ram'],
     console: [
@@ -337,7 +337,7 @@ export const COREBOOT_SEQUENCE_STEPS: BootStep[] = [
     },
     duration: 5400,
     view: 'coreboot',
-    screen: 'off',
+    screen: 'post',
     depth: 1,
     highlight: ['spiFlash', 'ram'],
     console: [
@@ -367,7 +367,7 @@ export const COREBOOT_SEQUENCE_STEPS: BootStep[] = [
     },
     duration: 5600,
     view: 'coreboot',
-    screen: 'off',
+    screen: 'post',
     depth: 1,
     highlight: ['ram', 'cpuBsp'],
     console: [

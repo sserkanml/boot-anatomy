@@ -441,7 +441,7 @@ const SECTIONS: BootStep[] = [
       tr: 'Reset kalkar kalkmaz CPU, reset vector’den firmware kodunu işletmeye başlar. UEFI önce memory controller’ı eğitir (memory training), ardından PCIe ve NVMe cihazlarını sayar ve işletim sistemine devredeceği ACPI tablolarını hazırlar.',
     },
     duration: 6000,
-    screen: 'post',
+    screen: 'off',
     // Everything between RESET# going high and the first instruction —
     highlight: ['cpu', 'ram', 'chipset', 'm2', 'pcie'],
     console: [
@@ -495,7 +495,7 @@ const SECTIONS: BootStep[] = [
       tr: 'Bu makinede reset vector’deki firmware, üretici UEFI’si değil coreboot’tur. O anda var olan belleğe göre boyutlanmış aşamalar hâlinde çalışır: hiç RAM’i olmayan bir bootblock, DRAM’i eğiten bir romstage ve her cihazı ayağa kaldırıp ACPI tablolarını kuran bir ramstage. Son işi bir payload’a atlamaktır — burada GRUB’a.',
     },
     duration: 5800,
-    screen: 'post',
+    screen: 'off',
     highlight: ['spiFlash', 'cpu', 'ram', 'chipset'],
     console: [
       'coreboot-4.22 bootblock starting...',
@@ -695,7 +695,7 @@ const SECTIONS: BootStep[] = [
       tr: 'graphical.target display manager’ı başlatır; o da bir Wayland ya da X oturumu açıp greeter’ı çizer. Ekran kartına gönderilen ilk kare ile birlikte, birinin power button’a basmasıyla başlayan zincir tamamlanmış olur.',
     },
     duration: 5200,
-    screen: 'login',
+    screen: 'boot',
     schematic: true,
     highlight: ['cpu', 'pcie', 'display'],
     console: ['[  OK  ] Started GNOME Display Manager.', 'gdm-session: greeter ready'],
